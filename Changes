@@ -43,3 +43,10 @@ Revision history for Perl extension Set::Array.
         chain.  Thanks to Steffen Muller for the spot.
         - Freed some memory that was being wasted in the unique method
         - Fixed this archive a bit to expand a bit more properly
+
+0.07  Tue Nov 27 09:00:00 2001
+        - Added the 'set()' method.  Thanks to Steffen Muller for the idea.
+        - Created an alias called 'get()' for the 'indices()' method.
+        - Fixed several methods that weren't handling '0' correctly.
+        - Replaced 'die' with 'croak' throughout module.
+        - Updated the docs.

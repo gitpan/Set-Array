@@ -1,5 +1,3 @@
-# Set::Array-0.06 by Daniel J. Berger (djberg96@hotmail.com)
-
 NAME
     Set::Array - Arrays as objects with lots of handy methods (including Set
     comparisons) and support for method chaining.
@@ -42,7 +40,7 @@ OBJECT BEHAVIOR
 
     * If the method called is not the last method in a chain (i.e. it's
     called in object context), the object itself is modified by that method
-    regardless of the 'final' context.
+    regardless of the 'final' context or method call.
 
     * If a method is called in list or scalar context, a list or list
     refererence is returned, respectively. The object itself is NOT
@@ -59,9 +57,10 @@ OBJECT BEHAVIOR
     * Methods that report a value, such as boolean methods like *exists()*
     or other methods such as *at()* or *as_hash()*, never modify the object.
 
-    * The methods *clear()*, *delete()*, *delete_at()* and *splice()* will
-    always modify the object. It seemed much too counterintuitive to call these
-    methods in any context without actually deleting/clearing the items!
+    * The methods *clear()*, *delete()*, *delete_at()*, and *splice* will
+    always modify the object. It seemed much too counterintuitive to call
+    these methods in any context without actually
+    deleting/clearing/substituting the items!
 
     * The methods *shift()* and *pop()* will modify the object AND return
     the value that was shifted or popped from the array. Again, it seemed
@@ -74,13 +73,18 @@ OBJECT BEHAVIOR
     use in conjunction with the *print()* method.
 
 BOOLEAN METHODS
-    empty() - Returns 1 if the array is empty, 0 otherwise.
+    empty() - Returns 1 if the array is empty, 0 otherwise. Empty is defined
+    as having a length of 0.
 
     exists(*val*) - Returns 1 if *val* exists within the array, 0 otherwise.
+    If no value (or *undef*) is passed, then this method will test for the
+    existence of undefined values within the array.
 
 STANDARD METHODS
     at(*index*) - Returns the item at the given index (or *undef*). A
-    negative index may be used to count from the end of the array.
+    negative index may be used to count from the end of the array. If no
+    value (or *undef*) is specified, it will look for the first item that is
+    not defined.
 
     clear() - Empties the array (i.e. length becomes 0). You may pass a '1'
     to this method to set each element of the array to *undef* rather than
@@ -88,10 +92,14 @@ STANDARD METHODS
 
     compact() - Removes undefined elements from the array.
 
-    count(*val*) - Returns the number of instances of *val* within the
-    array.
+    count(*?val?*) - Returns the number of instances of *val* within the
+    array. If *val* is not specified (or is *undef*), the method will return
+    the number of undefined values within the array.
 
-    delete(*val*) - Deletes all items that match *val* from the array.
+    delete(*list*) - Deletes all items within *list* from the array that
+    match. This method will crash if *list* is not defined. If your goal is
+    to delete undefined values from your object, use the *compact()* method
+    instead.
 
     delete_at(*index, ?index?*) - Deletes the item at the specified index.
     If a second index is specified, a range of items is deleted. You may use
@@ -126,7 +134,9 @@ STANDARD METHODS
 
     "$sao->foreach(sub{ ++$_ });"
 
-    $sao->index(*val*) - Returns the index of the first element of the array
+    get - Alias for the indices() method.
+
+    index(*val*) - Returns the index of the first element of the array
     object that contains *val*. Returns *undef* if no value is found.
 
     Note that there is no dereferencing here so if you're looking for an
@@ -138,11 +148,12 @@ STANDARD METHODS
 
     A range may also be used. It must be a quoted string in '0..3' format.
 
-    join(*char*) - Joins the individual elements of the list into a single
+    join(*?char?*) - Joins the individual elements of the list into a single
     string with the elements separated by the value of *char*. Useful in
-    conjunction with the *print()* method.
+    conjunction with the *print()* method. If no character is specified,
+    then *char* defaults to a comma.
 
-    e.g. "$sao->join(',')->print;"
+    e.g. "$sao->join('-')->print;"
 
     last() - Returns the last element of the array (or *undef*).
 
@@ -172,31 +183,34 @@ STANDARD METHODS
 
     reverse() - Reverses the order of the contents of the array.
 
+    set(*index*,*value*) - Sets the element at *index* to *value*, replacing
+    whatever may have already been there.
+
     shift() - Shifts the first element of the array and returns the shifted
     element.
 
-    sort(*?coderef?*) - Sorts the contents of the array in alphabetical order,
-    or in the order specified by the optional I<coderef>.  Use your
-    standard I<$a> and I<$b> variables within your calling program, e.g:
+    sort(*?coderef?*) - Sorts the contents of the array in alphabetical
+    order, or in the order specified by the optional *coderef*. Use your
+    standard *$a* and *$b* variables within your calling program, e.g:
 
-    my $sao = Set::Array->new(
-      { name => 'Berger', salary => 20000 },
-      { name => 'Berger', salary => 15000 },
-      { name => 'Vera', salary => 25000 },
-    );
+    "my $sao = Set::Array->new( { name => 'Berger', salary => 20000 }, {
+    name => 'Berger', salary => 15000 }, { name => 'Vera', salary => 25000
+    }, );"
 
-    my $subref = sub{ $b->{name} cmp $a->{name} || $b->{salary} <=> $a->{salary} };
+    "my $subref = sub{ $b->{name} cmp $a->{name} || $b->{salary} <=>
+    $a->{salary} };"
 
-    $sao14->sort($subref)->flatten->join->print(1);
+    "$sao14->sort($subref)->flatten->join->print(1);"
 
     splice(*?offset?,?length?,?list?*) - Splice the array starting at
     position *offset* up to *length* elements, and replace them with *list*.
-    If no list is provided, the elements are deleted.
+    If no list is provided, all elements are deleted. If length is omitted,
+    everything from *offset* onward is removed.
 
-    Returns an array or array reference in list or scalar context, respectively.
-    Note that this method will always modify the object, regardless of context.
-    If your goal was to retrieve a range of values without modifying the object,
-    use the *indices()* method instead.
+    Returns an array or array ref in list or scalar context, respectively.
+    This method always modifies the object, regardless of context. If your
+    goal was to grab a range of values without modifying the object, use the
+    *indices* method instead.
 
     unique() - Removes/returns non-unique elements from the list.
 
@@ -329,6 +343,10 @@ EXAMPLES
 
     "$sao3->splice();"
 
+    *modify the object AND assign a value at the same time?*
+
+    "my @unique = $sao1->unique->print;"
+
 KNOWN BUGS
     There is a bug in the *Want-0.05* module that currently prevents the use
     of most of the overloaded operators, though you can still use the
@@ -342,9 +360,19 @@ FUTURE PLANS
     code for a particular method and you know of a faster way, please email
     me. Be prepared to backup your claims with benchmarks (and the benchmark
     code you used). Tests on more than one operating system are preferable.
-    No, *map* is not always faster - *foreach* loops usually are.
+    No, *map* is not always faster - *foreach* loops usually are in my
+    experience.
 
-    More flexibility with the sort method and foreach method.
+    More flexibility with the foreach method (perhaps with iterators?).
+
+    Ultimately, I want to create a Set::Hash and Set::String module (both
+    already in the works) and have all three modules bundled together. Then,
+    whenever I return a string or a hash (instead of an array), I return
+    them as objects, allowing you to continue method chaining no matter what
+    type of data is returned, using methods appropriate for the return type.
+
+    This probably means a major re-write using a virtual class, but the API
+    probably won't change for the subclasses.
 
 THANKS
     Thanks to all the kind (and sometimes grumpy) folks at
@@ -356,26 +384,3 @@ THANKS
 AUTHOR
     Daniel Berger djberg96@hotmail.com
 
-Set/Array version 0.01
-======================
-
-INSTALLATION
-
-To install this module type the following:
-
-   perl Makefile.PL
-   make
-   make test
-   make install
-
-DEPENDENCIES
-
-This module requires these other modules and libraries:
-
-The 'Want' module by Robin Houston.
-
-COPYRIGHT AND LICENCE
-
-Copyright (C) 2001 Daniel J. Berger.  All Rights Reserved.
-This module is free software. It may be used, redistributed 
-and/or modified under the same terms as Perl itself.

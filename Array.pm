@@ -8,6 +8,7 @@ use strict;
 use attributes qw(reftype);
 use subs qw(foreach push pop shift join splice unshift);
 use Want;
+use Carp;
 
 # Some not documented/implemented.  Waiting for Want-0.06 to arrive.
 use overload
@@ -28,7 +29,7 @@ BEGIN{
    use Exporter;
    use vars qw(@ISA $VERSION);
    @ISA = qw(Exporter);
-   $VERSION = '0.06';
+   $VERSION = '0.07';
 }
 
 sub new{
@@ -44,7 +45,7 @@ sub as_hash{
    $arg{key_order} = 'even' unless $arg{key_order};
 
    if( (scalar(@$self) % 2) != 0 ){
-      die "Odd number of elements in 'as_hash()' call\n";
+      croak "Odd number of elements in 'as_hash()' call\n";
    }	
    else{
       my %hash;
@@ -96,7 +97,7 @@ sub count{
    my $hits = 0;
 
    # Count undefined elements
-   unless($val){
+   unless(defined($val)){
       foreach(@$self){ $hits++ unless $_ }  
       if(want('OBJECT')){ return bless \$hits }
       return $hits;
@@ -111,8 +112,8 @@ sub count{
 sub delete{
    my($self,@vals) = @_;
 
-   unless($vals[0]){
-      die "Undefined value passed to 'delete' method in Set::Array\n";
+   unless(defined($vals[0])){
+      croak "Undefined value passed to 'delete()' method\n";
    }
 
    foreach my $val(@vals){
@@ -128,11 +129,11 @@ sub delete{
 sub delete_at{
    my($self,$start_index, $end_index) = @_;
 
-   unless($start_index){
-      die "No index passed to 'delete_at' method in Set::Array\n";
+   unless(defined($start_index)){
+      croak "No index passed to 'delete_at()' method\n";
    }
 	
-   unless($end_index){ $end_index = 0 }
+   unless(defined($end_index)){ $end_index = 0 }
    if( ($end_index eq 'end') || ($end_index == -1) ){ $end_index = $#$self }
    if($start_index == 0){ $end_index++ }
    my @deleted = CORE::splice(@{$self},$start_index,$end_index);
@@ -154,7 +155,7 @@ sub exists{
    my($self,$val) = @_;
    
    # Check specifically for undefined values
-   unless($val){
+   unless(defined($val)){
       foreach(@$self){ unless($_){ return 1 } }
       return 0;
    }
@@ -169,7 +170,7 @@ sub fill{
    my($self,$val, $start, $length) = @_;  # Start may also be a range
    return unless(scalar(@{$self}) > 0);   # Test for empty array
 	
-   unless($start){ $start = 0 }
+   unless(defined($start)){ $start = 0 }
 	
    if($length){ $length += $start }
    else{ $length = $#$self + 1}
@@ -235,7 +236,7 @@ sub foreach{
    my($self,$coderef) = @_;
 
    unless($coderef){
-      die "No code reference passed to 'foreach' method in Set::Array\n";
+      croak "No code reference passed to 'foreach' method in Set::Array\n";
    }
 
    CORE::foreach (@$self){ &$coderef }
@@ -251,7 +252,7 @@ sub index{
    my($self,$val) = @_;
 
    # Test for undefined value
-   unless($val){
+   unless(defined($val)){
       for(my $n=0; $n<=$#$self; $n++){
          unless($self->[$n]){
             if(want('OBJECT')){ return bless \$n }
@@ -276,8 +277,8 @@ sub indices{
    my($self,@indices) = @_;
    my @iArray;
 
-   unless($indices[0]){
-      die "No index/indices passed to 'indices' method in Set::Array\n";
+   unless(defined($indices[0])){
+      croak "No index/indices passed to 'indices' (aka 'get') method\n";
    }
 	
    CORE::foreach(@indices){
@@ -297,6 +298,29 @@ sub indices{
    if(want('OBJECT')){ return bless \@iArray }
    if(wantarray){ return @iArray }
    if(defined wantarray){ return \@iArray }
+}
+
+# Alias for 'indices()'
+*get = \&indices;
+
+# Set a specific index to a specific value
+sub set{
+   my($self,$index,$val) = @_;
+   
+   unless(defined($index) && $val){
+      croak "No index or value passed to 'set()' method\n";
+   }
+
+   if(want('OBJECT')){
+      $self->[$index] = $val;
+      return $self;
+   }
+
+   my @copy = @$self;
+   $copy[$index] = $val;
+
+   if(wantarray){ return @copy }
+   if(defined wantarray){ return \@copy }
 }
 
 # Joins the contents of the list with the specified character
@@ -494,19 +518,19 @@ sub splice{
    no warnings 'uninitialized';
 
    my @deleted;
-   unless($offset){
+   unless(defined($offset)){
       @deleted = CORE::splice(@$self);
       if(want('OBJECT')){ return $self }
       if(wantarray){ return @deleted }
       if(defined wantarray){ return \@deleted }
    }
-   unless($length){
+   unless(defined($length)){
       @deleted = CORE::splice(@$self,$offset);
       if(want('OBJECT')){ return $self }
       if(wantarray){ return @deleted }
       if(defined wantarray){ return \@deleted }
    }
-   unless($list[0]){
+   unless(defined($list[0])){
       @deleted = CORE::splice(@$self,$offset,$length);
       if(want('OBJECT')){ return $self }
       if(wantarray){ return @deleted }
@@ -839,7 +863,9 @@ e.g. To increment all elements in the array by one...
 
 C<< $sao-E<gt>foreach(sub{ ++$_ }); >>
 
-B<$sao-E<gt>index(>I<val>B<)> - Returns the index of the first element of the array
+B<get> - Alias for the B<indices()> method.
+
+B<index(>I<val>B<)> - Returns the index of the first element of the array
 object that contains I<val>.  Returns I<undef> if no value is found.
 
 Note that there is no dereferencing here so if you're looking for an item
@@ -886,6 +912,9 @@ reference in list or scalar context, respectively.  Note that it does
 B<not> return the length in scalar context.  Use the I<length> method for that.
 
 B<reverse()> - Reverses the order of the contents of the array.
+
+B<set(>I<index>,I<value>B<)> - Sets the element at I<index> to I<value>,
+replacing whatever may have already been there.
 
 B<shift()> - Shifts the first element of the array and returns
 the shifted element.
@@ -1051,6 +1080,10 @@ C<$sao3-E<gt>clear();>
 
 C<$sao3-E<gt>splice();>
 
+I<modify the object AND assign a value at the same time?>
+
+C<my @unique = $sao1-E<gt>unique-E<gt>print;>
+
 =head1 KNOWN BUGS
 
 There is a bug in the I<Want-0.05> module that currently prevents the use of
@@ -1065,9 +1098,18 @@ I'm always on the lookout for faster algorithms.  If you've looked at the code
 for a particular method and you know of a faster way, please email me.  Be
 prepared to backup your claims with benchmarks (and the benchmark code you
 used).  Tests on more than one operating system are preferable.  No, I<map> is
-not always faster - I<foreach> loops usually are.
+not always faster - I<foreach> loops usually are in my experience.
 
-More flexibility with the foreach method.
+More flexibility with the foreach method (perhaps with iterators?).
+
+Ultimately, I want to create a Set::Hash and Set::String module (both already
+in the works) and have all three modules bundled together.  Then, whenever
+I return a string or a hash (instead of an array),  I return them as objects,
+allowing you to continue method chaining no matter what type of data is
+returned, using methods appropriate for the return type.
+
+This probably means a major re-write using a virtual class, but the
+API probably won't change for the subclasses.
 
 =head1 THANKS
 

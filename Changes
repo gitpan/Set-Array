@@ -1,8 +1,65 @@
 Revision history for Perl extension Set::Array.
 
-0.01  Tue Sep 25 15:34:11 2001
-	- original version; created by h2xs 1.21 with options
-		-A -X -n Set::Array
+0.10  Sun Jul 28 20:46:00 2002
+        - Added 'duplicates()' method
+	- Added a 'sym_diff' alias for the 'symmetric_difference()' method.
+	- Added a 'contains' alias for the 'exists()' method.
+	- A few of the overloaded methods did not behave consistently with the
+	  rest of the module when it came to void calling context.  This has
+	  been fixed.
+        - Removed a debug print statement that had been inadvertently left in
+	  the 'symmetric_difference()' method.  Oops.  Thanks to Martin
+	  Krzywinski for the spot.
+        - This file has been changed to show the most recent changes on the
+	  top of the page. :)
+        - Minor POD fixes
+
+0.09  Fri Jun 21 11:22:00 2002
+        - bag() method calling context issue fixed
+        - The intersection() method (taken from the Cookbook) was broken.
+	  It has been fixed.  Thanks to James Keenan for the spot.
+	- Some minor POD fixes.
+
+0.08  Fri Dec 21 09:00:00 2001
+        - Modified 'is_equal' and 'not_equal' to deal with undef values
+        - Stricter error checking in 'foreach' method
+        - Added 'impose()' method
+        - Added 'pack()' method
+        - Added 'rindex()' method
+        - Added the beginnings of a test suite
+        - Fixed a major bug in the 'delete_at()' method (oops)
+        - Renamed 'empty()' method to 'is_empty()'
+
+0.07  Tue Nov 27 09:00:00 2001
+        - Added the 'set()' method.  Thanks to Steffen Muller for the idea.
+        - Created an alias called 'get()' for the 'indices()' method.
+        - Fixed several methods that weren't handling '0' correctly.
+        - Replaced 'die' with 'croak' throughout module.
+        - Updated the docs.
+
+0.06  Tue Nov 20 14:30:00 2001
+        - Fixed a bug with the 'unique' method.  I had evaluated
+        contexts incorrectly, causing it to fail when part of a
+        chain.  Thanks to Steffen Muller for the spot.
+        - Freed some memory that was being wasted in the unique method
+        - Fixed this archive a bit to expand a bit more properly
+
+0.05  Mon Oct 9 12:30:00 2001
+        - Turned on the 'fallback' option for 'overload'.  This
+        prevents errors for simple operations like "if($sao)", because
+        I was accidentally using the overloaded operators in some
+        cases where I meant to use the CORE operators.  Thanks to
+        Terrence Brannon for the spot.
+
+0.04  Fri Oct 5 12:00:00 2001
+        - Modified the 'sort' method so that it handles coderefs
+        in the same manner as Perl's built-in 'sort' method (with
+        the exception that the word 'sub' is required).  Thanks
+        to Sean McAfee for the help.
+
+0.03  Tue Oct 2 08:00:00 2001
+        - Changed the 'splice' method so that its return values
+        are consistent with the rest of the module.
 
 0.02  Wed Sep 26 16:00:00 2001
         - Modified several methods to either handle or die on
@@ -20,49 +77,6 @@ Revision history for Perl extension Set::Array.
         indices - Dies if no arg supplied (or undef).
         join - Now defaults to comma if no value supplied.
 
-0.03  Tue Oct 2 08:00:00 2001
-        - Changed the 'splice' method so that its return values
-        are consistent with the rest of the module.
-
-0.04  Fri Oct 5 12:00:00 2001
-        - Modified the 'sort' method so that it handles coderefs
-        in the same manner as Perl's built-in 'sort' method (with
-        the exception that the word 'sub' is required).  Thanks
-        to Sean McAfee for the help.
-
-0.05  Mon Oct 9 12:30:00 2001
-        - Turned on the 'fallback' option for 'overload'.  This
-        prevents errors for simple operations like "if($sao)", because
-        I was accidentally using the overloaded operators in some
-        cases where I meant to use the CORE operators.  Thanks to
-        Terrence Brannon for the spot.
-
-0.06  Tue Nov 20 14:30:00 2001
-        - Fixed a bug with the 'unique' method.  I had evaluated
-        contexts incorrectly, causing it to fail when part of a
-        chain.  Thanks to Steffen Muller for the spot.
-        - Freed some memory that was being wasted in the unique method
-        - Fixed this archive a bit to expand a bit more properly
-
-0.07  Tue Nov 27 09:00:00 2001
-        - Added the 'set()' method.  Thanks to Steffen Muller for the idea.
-        - Created an alias called 'get()' for the 'indices()' method.
-        - Fixed several methods that weren't handling '0' correctly.
-        - Replaced 'die' with 'croak' throughout module.
-        - Updated the docs.
-
-0.08  Fri Dec 21 09:00:00 2001
-        - Modified 'is_equal' and 'not_equal' to deal with undef values
-        - Stricter error checking in 'foreach' method
-        - Added 'impose()' method
-        - Added 'pack()' method
-        - Added 'rindex()' method
-        - Added the beginnings of a test suite
-        - Fixed a major bug in the 'delete_at()' method (oops)
-        - Renamed 'empty()' method to 'is_empty()'
-
-0.09  Fir Jun 21 11:22:00 2002
-        - bag() method calling context issue fixed
-        - The intersection() method (taken from the Cookbook) was broken.
-	  It has been fixed.  Thanks to James Keenan for the spot.
-	- Some minor POD fixes.
+0.01  Tue Sep 25 15:34:11 2001
+	- original version; created by h2xs 1.21 with options
+		-A -X -n Set::Array

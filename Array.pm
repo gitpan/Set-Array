@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.09';
+   $VERSION = '0.10';
 }
 
 sub new{
@@ -141,6 +141,30 @@ sub delete_at{
    if(defined wantarray){ return \@{$self} }
 }
 
+sub duplicates{
+   my($self) = @_;
+   
+   my(@dups,%count);
+
+   if(want('OBJECT') || !(defined wantarray)){
+      my %count;
+      CORE::foreach(@$self){
+         $count{$_}++;
+         CORE::push(@dups,$_) if $count{$_} > 1;
+      }
+      @$self = @dups;
+      return $self;
+   }
+   
+   CORE::foreach(@$self){
+      $count{$_}++;
+      if($count{$_} > 1){ CORE::push(@dups,$_) }
+   }
+
+   if(wantarray){ return @dups }
+   if(defined wantarray){ return \@dups }
+}
+
 # Tests to see if value exists anywhere within array
 sub exists{
    my($self,$val) = @_;
@@ -155,6 +179,8 @@ sub exists{
 
    return 0;
 }
+
+*contains = \&exists;
 
 # Fills the elements of the array.  Does not create new elements
 sub fill{
@@ -218,7 +244,7 @@ sub flatten{
          next;
       }
    }
-   if(wantarray){ print return @temp }
+   if(wantarray){ return @temp }
    if(defined wantarray){ return \@temp }
 }
 
@@ -659,7 +685,7 @@ sub bag{
    my($op1, $op2, $reversed) = @_;
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
-   if(want('OBJECT')){
+   if(want('OBJECT') || !(defined wantarray)){
       CORE::push(@$op1,@$op2);
       return $op1;
    }
@@ -695,13 +721,17 @@ sub difference{
    my(%item1,%item2,@diff);
    CORE::foreach(@$op1){ $item1{$_}++ }
    CORE::foreach(@$op2){ $item2{$_}++ }
-	
+
    CORE::foreach(keys %item1){
       if($item2{$_}){ next }
       CORE::push(@diff,$_);
    }
+	
+   if(want('OBJECT') || !(defined wantarray)){
+      @$op1 = @diff;
+      return $op1;
+   }
 
-   if(want('OBJECT')){ return bless \@diff }
    if(wantarray){ return @diff }
    if(defined wantarray){ return \@diff }
 }
@@ -714,7 +744,7 @@ sub intersection{
    my(%count,@int);
    @count{@$op1} = @$op1;
 
-   if(want('OBJECT')){
+   if(want('OBJECT') || !(defined wantarray)){
       @$op1 = CORE::grep{CORE::delete $count{$_}} @$op2;
       return $op1;
    }
@@ -775,16 +805,17 @@ sub symmetric_difference{
 
    CORE::foreach(CORE::keys %count1,CORE::keys %count2){ $count3{$_}++ }
 
-   if(want('OBJECT')){
+   if(want('OBJECT') || !(defined wantarray)){
       @$op1 = CORE::grep{$count3{$_} == 1} CORE::keys %count3;
       return $op1;
    }
 
    @symdiff = CORE::grep{$count3{$_} == 1} CORE::keys %count3;
-   print CORE::join(', ',@symdiff), "\n";
    if(wantarray){ return @symdiff }
    if(defined wantarray){ return \@symdiff }
 }
+
+*sym_diff = \&symmetric_difference;
 
 # Returns the union of two arrays, non-unique values excluded
 sub union{
@@ -793,9 +824,14 @@ sub union{
 
    my %union;
    CORE::foreach(@$op1, @$op2){ $union{$_}++ }
-   my @union = keys %union;
 
-   if(want('OBJECT')){ return bless \@union }
+   if(want('OBJECT') || !(defined wantarray)){
+      @$op1 = CORE::keys %union;
+      return $op1;
+   }
+
+   my @union = CORE::keys %union;
+
    if(wantarray){ return @union }
    if(defined wantarray){ return \@union }
 }
@@ -914,6 +950,10 @@ method instead.
 B<delete_at(>I<index, ?index?>B<)> - Deletes the item at the
 specified index. If a second index is specified, a range of items is deleted.
 You may use -1 or the string 'end' to refer to the last element of the array.
+
+B<duplicates> - Returns a list of N-1 elements for each element N in the
+set.  For example, if you have set "X X Y Y Y", this method would return
+a the list "X Y Y".
 
 B<fill(>I<val,?start?,?length?>B<)> - Sets the selected elements of
 the array (which may be the entire array) to I<val>.  The default value for
@@ -1087,13 +1127,19 @@ call.
 Examples (using the '==' operator or 'is_equal' method):
 
 my $sao1 = Set::Array->new(1,2,3,4,5);
+
 my $sao2 = Set::Array->new(1,2,3,4,5);
+
 my $ref1 = [1,2,3,4,5];
 
 if($sao1 == $sao2)...         # valid
+
 if($sao1 == $ref1)...         # valid
+
 if($ref1 == $sao2)...         # valid
+
 if($sao1->is_equal($sao2))... # valid
+
 if($sao1->is_equal($ref1))... # valid
 
 All of these operations return either a boolean value (for equality operators) or

@@ -1,5 +1,13 @@
 Revision history for Perl extension Set::Array.
 
+0.11  Wed Feb 02 07:01:00 2004
+        - Fixed bug in exists() method.  Thanks go to Rob Kinyon for the spot and
+          the fix.
+        - Fixed bug in the count() method.
+        - Fixed bug in the delete() method.
+        - Added a to_hash() alias for the as_hash() method.
+        - Added more tests
+
 0.10  Sun Jul 28 20:46:00 2002
         - Added 'duplicates()' method
 	- Added a 'sym_diff' alias for the 'symmetric_difference()' method.

@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.10';
+   $VERSION = '0.11';
 }
 
 sub new{
@@ -54,6 +54,7 @@ sub as_hash{
       return \%hash;
    }
 }
+*to_hash = \&as_hash;
 
 # Return element at specified index
 sub at{
@@ -101,7 +102,7 @@ sub count{
       return $hits;
    }
 
-   $hits = grep /$val/, @$self;
+   $hits = grep /^$val$/, @$self;
    if(want('OBJECT')){ return bless \$hits }
    return $hits;
 }
@@ -115,7 +116,7 @@ sub delete{
    }
 
    foreach my $val(@vals){
-      @$self = grep $_ !~ /$val/, @$self;
+      @$self = grep $_ !~ /^$val$/, @$self;
    }
 
    if(want('OBJECT')){ return $self }
@@ -124,6 +125,8 @@ sub delete{
 }
 
 # Deletes an element at a specified index, or range of indices
+# I'm not sure I like the range behavior for this method and may change it
+# (or remove it) in the future.
 sub delete_at{
    my($self,$start_index, $end_index) = @_;
 
@@ -131,16 +134,19 @@ sub delete_at{
       croak "No index passed to 'delete_at()' method\n";
    }
 	
-   unless(defined($end_index)){ $end_index = 1 }
+   unless(defined($end_index)){ $end_index = 0 }
    if( ($end_index eq 'end') || ($end_index == -1) ){ $end_index = $#$self }
 
-   my @deleted = CORE::splice(@{$self},$start_index,$end_index);
+   my $num = ($end_index - $start_index) + 1;
+
+   CORE::splice(@{$self},$start_index,$num);
 	
-   if(want('OBJECT')){ return $self }
+   if(want('OBJECT') || !(defined wantarray)){ return $self }
    if(wantarray){ return @$self }
    if(defined wantarray){ return \@{$self} }
 }
 
+# Returns a list of duplicate items in the array.
 sub duplicates{
    my($self) = @_;
    
@@ -175,7 +181,7 @@ sub exists{
       return 0;
    }
 
-   if(grep /$val/, @$self){ return 1 }
+   if(grep /^$val$/, @$self){ return 1 }
 
    return 0;
 }
@@ -1243,14 +1249,7 @@ not always faster - I<foreach> loops usually are in my experience.
 
 More flexibility with the foreach method (perhaps with iterators?).
 
-Ultimately, I want to create a Set::Hash and Set::String module (the latter
-implemented and the former in the works) and have all three modules bundled
-together.  Then, whenever I return a string or a hash (instead of an array),
-I return them as objects, allowing you to continue method chaining no matter
-what type of data is returned, using methods appropriate for the return type.
-
-This probably means a major re-write using a virtual class, but the
-API probably won't change for the subclasses.
+More tests.
 
 =head1 THANKS
 
@@ -1263,6 +1262,7 @@ chaining be without it?
 =head1 AUTHOR
 
 Daniel Berger
-djberg96@hotmail.com
+djberg96 at hotmail dot com
+imperator on IRC (freenode)
 
 =cut

@@ -4,3 +4,18 @@ Revision history for Perl extension Set::Array.
 	- original version; created by h2xs 1.21 with options
 		-A -X -n Set::Array
 
+0.02  Wed Sep 26 16:00:00 2001
+        - Modified several methods to either handle or die on
+          undefined values.  The following methods were changed:
+
+        count - Counts undef elements if no args (or undef).
+        delete - Dies if no arg (or undef).  Now takes a list,
+           rather than a scalar, as an arg (though can still take
+           a scalar, of course).
+        delete_at - Dies if no start index supplied (or undef).
+        exists - Now possible to test for existence of 'undef'.
+        foreach - Dies if no arg supplied (or undef).
+        index - If no arg (or undef), returns index of first
+           occurrence of 'undef' value within array.
+        indices - Dies if no arg supplied (or undef).
+        join - Now defaults to comma if no value supplied.

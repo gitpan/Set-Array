@@ -22,7 +22,7 @@ BEGIN{
    use Exporter;
    use vars qw(@ISA $VERSION);
    @ISA = qw(Exporter);
-   $VERSION = '.01';
+   $VERSION = '0.02';
 }
 
 sub new{
@@ -86,16 +86,32 @@ sub compact{
 # Return the number of times the specified value appears within array
 sub count{
    my($self,$val) = @_;
-   my $hits = grep /$val/, @$self;
+
+   my $hits = 0;
+
+   # Count undefined elements
+   unless($val){
+      foreach(@$self){ $hits++ unless $_ }  
+      if(want('OBJECT')){ return bless \$hits }
+      return $hits;
+   }
+
+   $hits = grep /$val/, @$self;
    if(want('OBJECT')){ return bless \$hits }
    return $hits;
 }
 
 # Delete all instances of the specified value within the array
 sub delete{
-   my($self,$val) = @_;
+   my($self,@vals) = @_;
 
-   @$self = grep $_ !~ /$val/, @$self;
+   unless($vals[0]){
+      die "Undefined value passed to 'delete' method in Set::Array\n";
+   }
+
+   foreach my $val(@vals){
+      @$self = grep $_ !~ /$val/, @$self;
+   }
 
    if(want('OBJECT')){ return $self }
    if(wantarray){ return @$self }
@@ -105,6 +121,10 @@ sub delete{
 # Deletes an element at a specified index, or range of indices
 sub delete_at{
    my($self,$start_index, $end_index) = @_;
+
+   unless($start_index){
+      die "No index passed to 'delete_at' method in Set::Array\n";
+   }
 	
    unless($end_index){ $end_index = 0 }
    if( ($end_index eq 'end') || ($end_index == -1) ){ $end_index = $#$self }
@@ -126,7 +146,15 @@ sub empty{
 # Tests to see if value exists anywhere within array
 sub exists{
    my($self,$val) = @_;
+   
+   # Check specifically for undefined values
+   unless($val){
+      foreach(@$self){ unless($_){ return 1 } }
+      return 0;
+   }
+
    if(grep /$val/, @$self){ return 1 }
+
    return 0;
 }
 
@@ -199,6 +227,11 @@ sub flatten{
 # Loop mechanism
 sub foreach{
    my($self,$coderef) = @_;
+
+   unless($coderef){
+      die "No code reference passed to 'foreach' method in Set::Array\n";
+   }
+
    CORE::foreach (@$self){ &$coderef }
 
    if(want('OBJECT')){ return $self }
@@ -210,8 +243,20 @@ sub foreach{
 # of the specified value
 sub index{
    my($self,$val) = @_;
+
+   # Test for undefined value
+   unless($val){
+      for(my $n=0; $n<=$#$self; $n++){
+         unless($self->[$n]){
+            if(want('OBJECT')){ return bless \$n }
+            if(defined wantarray){ return $n }
+         }
+      }
+   }
+
    for(my $n=0; $n<=$#$self; $n++){
-      if( @$self[$n] =~ /$val/ ){
+      next unless defined $self->[$n];
+      if( $self->[$n] =~ /$val/ ){
          if(want('OBJECT')){ return bless \$n }
          if(defined wantarray){ return $n }
       }
@@ -224,6 +269,10 @@ sub index{
 sub indices{
    my($self,@indices) = @_;
    my @iArray;
+
+   unless($indices[0]){
+      die "No index/indices passed to 'indices' method in Set::Array\n";
+   }
 	
    CORE::foreach(@indices){
       if($_ =~ /(\d)\.\.(\d)/){ for($1..$2){
@@ -247,6 +296,8 @@ sub indices{
 # Joins the contents of the list with the specified character
 sub join{
    my($self,$char) = @_;
+
+   $char = ',' unless $char;
 
    my $string;
 
@@ -320,6 +371,7 @@ sub print{
 # Pushes an element onto the end of the array
 sub push{
    my($self,@list) = @_;
+
    CORE::push(@{$self},@list);
 
    if(want('OBJECT')){ return $self }
@@ -687,15 +739,19 @@ B<Here are the exceptions>:
 
 =head1 BOOLEAN METHODS
 
-B<empty()> - Returns 1 if the array is empty, 0 otherwise.
+B<empty()> - Returns 1 if the array is empty, 0 otherwise.  Empty is defined
+as having a length of 0.
 
 B<exists(>I<val>B<)> - Returns 1 if I<val> exists within the array,
-0 otherwise.
+0 otherwise.  If no value (or I<undef>) is passed, then this
+method will test for the existence of undefined values within the array.
 
 =head1 STANDARD METHODS
 
 B<at(>I<index>B<)> - Returns the item at the given index (or
 I<undef>). A negative index may be used to count from the end of the array.
+If no value (or I<undef>) is specified, it will look for the first item
+that is not defined.
 
 B<clear()> - Empties the array (i.e. length becomes 0).  You may
 pass a '1' to this method to set each element of the array to I<undef> rather
@@ -703,11 +759,14 @@ than truly empty it.
 
 B<compact()> - Removes undefined elements from the array.
 
-B<count(>I<val>B<)> - Returns the number of instances of I<val>
-within the array.
+B<count(>I<?val?>B<)> - Returns the number of instances of I<val>
+within the array.  If I<val> is not specified (or is I<undef>), the
+method will return the number of undefined values within the array.
 
-B<delete(>I<val>B<)> - Deletes all items that match I<val> from the
-array.
+B<delete(>I<list>B<)> - Deletes all items within I<list> from the array
+that match.  This method will crash if I<list> is not defined.  If your goal
+is to delete undefined values from your object, use the I<compact()>
+method instead.
 
 B<delete_at(>I<index, ?index?>B<)> - Deletes the item at the
 specified index. If a second index is specified, a range of items is deleted.
@@ -755,11 +814,12 @@ is out of range.
 
 A range may also be used.  It must be a quoted string in '0..3' format.
 
-B<join(>I<char>B<)> - Joins the individual elements of the list into
+B<join(>I<?char?>B<)> - Joins the individual elements of the list into
 a single string with the elements separated by the value of I<char>.  Useful
-in conjunction with the I<print()> method.
+in conjunction with the I<print()> method.  If no character is specified,
+then I<char> defaults to a comma.
 
-e.g. C<< $sao-E<gt>join(',')-E<gt>print; >>
+e.g. C<< $sao-E<gt>join('-')-E<gt>print; >>
 
 B<last()> - Returns the last element of the array (or I<undef>).
 

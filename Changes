@@ -29,3 +29,10 @@ Revision history for Perl extension Set::Array.
         in the same manner as Perl's built-in 'sort' method (with
         the exception that the word 'sub' is required).  Thanks
         to Sean McAfee for the help.
+
+0.05  Mon Oct 9 12:30:00 2001
+        - Turned on the 'fallback' option for 'overload'.  This
+        prevents errors for simple operations like "if($sao)", because
+        I was accidentally using the overloaded operators in some
+        cases where I meant to use the CORE operators.  Thanks to
+        Terrence Brannon for the spot.

@@ -16,13 +16,14 @@ use overload
    "&"   => "bag",
    "*"   => "intersection",
    "-"   => "difference",
-   "%"   => "symmetric_difference";
+   "%"   => "symmetric_difference",
+   "fallback" => 1;
 
 BEGIN{
    use Exporter;
    use vars qw(@ISA $VERSION);
    @ISA = qw(Exporter);
-   $VERSION = '0.04';
+   $VERSION = '0.05';
 }
 
 sub new{

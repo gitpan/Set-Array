@@ -6,9 +6,10 @@
 package Set::Array;
 use strict;
 use attributes qw(reftype);
-use subs qw(foreach push pop shift join splice);
+use subs qw(foreach push pop shift join splice unshift);
 use Want;
 
+# Some not documented/implemented.  Waiting for Want-0.06 to arrive.
 use overload
    "=="  => "is_equal",
    "!="  => "not_equal",
@@ -17,13 +18,17 @@ use overload
    "*"   => "intersection",
    "-"   => "difference",
    "%"   => "symmetric_difference",
+   "<<"  => "push",
+   ">>"  => "shift",
+   "<<=" => "unshift",
+   ">>=" => "pop",
    "fallback" => 1;
 
 BEGIN{
    use Exporter;
    use vars qw(@ISA $VERSION);
    @ISA = qw(Exporter);
-   $VERSION = '0.05';
+   $VERSION = '0.06';
 }
 
 sub new{
@@ -522,16 +527,17 @@ sub unique{
 	
    CORE::foreach(@$self){ $item{$_}++ }
    
-   if( (!want('OBJECT')) || (defined wantarray) ){
-      my @temp = keys %item;
-      if(wantarray){ return @temp }
-      if(defined wantarray){ return \@temp }
+   if(want('OBJECT') || !(defined wantarray)){
+      @$self = keys %item;
+      %item = ();
+      return $self;
    }
-   
-   @$self = keys %item;
-   if(want('OBJECT')){ return $self }
-   if(wantarray){ return @$self }
-   if(defined wantarray){ return \@{$self} }
+
+   my @temp = keys %item;
+   %item = ();
+
+   if(wantarray){ return @temp }
+   if(defined wantarray){ return \@temp }
 }
 
 # Unshifts a value to the front of the array
@@ -545,6 +551,18 @@ sub unshift{
 }
 
 #### OVERLOADED OPERATOR METHODS ####
+
+# Really just a 'push', but needs to handle ops
+sub append{
+   my($op1, $op2, $reversed) = @_;
+   ($op2,$op1) = ($op1,$op2) if $reversed;
+
+   CORE::push(@{$op1},@{$op2});
+
+   if(want('OBJECT')){ return $op1 }
+   return @$op1 if wantarray;
+   return \@{$op1} if defined wantarray;
+}
 
 # A union that includes non-unique values (i.e. everything)
 sub bag{
@@ -726,7 +744,7 @@ B<Here are the rules>:
 
 * If the method called is not the last method in a chain (i.e. it's called
   in object context), the object itself is modified by that method regardless
-  of the 'final' context.
+  of the 'final' context or method call.
 
 * If a method is called in list or scalar context, a list or list refererence
   is returned, respectively. The object itself is B<NOT> modified.

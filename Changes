@@ -36,3 +36,10 @@ Revision history for Perl extension Set::Array.
         I was accidentally using the overloaded operators in some
         cases where I meant to use the CORE operators.  Thanks to
         Terrence Brannon for the spot.
+
+0.06  Tue Nov 20 14:30:00 2001
+        - Fixed a bug with the 'unique' method.  I had evaluated
+        contexts incorrectly, causing it to fail when part of a
+        chain.  Thanks to Steffen Muller for the spot.
+        - Freed some memory that was being wasted in the unique method
+        - Fixed this archive a bit to expand a bit more properly

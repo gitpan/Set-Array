@@ -19,3 +19,7 @@ Revision history for Perl extension Set::Array.
            occurrence of 'undef' value within array.
         indices - Dies if no arg supplied (or undef).
         join - Now defaults to comma if no value supplied.
+
+0.03  Tue Oct 2 08:00:00 2001
+        - Changed the 'splice' method so that its return values
+        are consistent with the rest of the module.

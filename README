@@ -59,9 +59,9 @@ OBJECT BEHAVIOR
     * Methods that report a value, such as boolean methods like *exists()*
     or other methods such as *at()* or *as_hash()*, never modify the object.
 
-    * The methods *clear()*, *delete()* and *delete_at()* will always modify
-    the object. It seemed much too counterintuitive to call these methods in
-    any context without actually deleting/clearing the items!
+    * The methods *clear()*, *delete()*, *delete_at()* and *splice()* will
+    always modify the object. It seemed much too counterintuitive to call these
+    methods in any context without actually deleting/clearing the items!
 
     * The methods *shift()* and *pop()* will modify the object AND return
     the value that was shifted or popped from the array. Again, it seemed
@@ -183,6 +183,11 @@ STANDARD METHODS
     splice(*?offset?,?length?,?list?*) - Splice the array starting at
     position *offset* up to *length* elements, and replace them with *list*.
     If no list is provided, the elements are deleted.
+
+    Returns an array or array reference in list or scalar context, respectively.
+    Note that this method will always modify the object, regardless of context.
+    If your goal was to retrieve a range of values without modifying the object,
+    use the *indices()* method instead.
 
     unique() - Removes/returns non-unique elements from the list.
 

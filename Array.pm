@@ -22,7 +22,7 @@ BEGIN{
    use Exporter;
    use vars qw(@ISA $VERSION);
    @ISA = qw(Exporter);
-   $VERSION = '0.02';
+   $VERSION = '0.03';
 }
 
 sub new{
@@ -474,25 +474,35 @@ sub sort{
 }
 
 # Splices a value, or range of values, from the array
-# Needs work (return values)
 sub splice{
    my($self,$offset,$length,@list) = @_;
 
+   no warnings 'uninitialized';
+
+   my @deleted;
    unless($offset){
-      CORE::splice(@$self);
-      return $self;
+      @deleted = CORE::splice(@$self);
+      if(want('OBJECT')){ return $self }
+      if(wantarray){ return @deleted }
+      if(defined wantarray){ return \@deleted }
    }
    unless($length){
-      CORE::splice(@$self,$offset);
-      return @$self;
+      @deleted = CORE::splice(@$self,$offset);
+      if(want('OBJECT')){ return $self }
+      if(wantarray){ return @deleted }
+      if(defined wantarray){ return \@deleted }
    }
    unless($list[0]){
-      CORE::splice(@$self,$offset,$length);
-      return @$self;
+      @deleted = CORE::splice(@$self,$offset,$length);
+      if(want('OBJECT')){ return $self }
+      if(wantarray){ return @deleted }
+      if(defined wantarray){ return \@deleted }
    }
 
-   CORE::splice(@$self,$offset,$length,@list);
-   return $self;
+   @deleted = CORE::splice(@$self,$offset,$length,@list);
+   if(want('OBJECT')){ return $self }
+   if(wantarray){ return @deleted }
+   if(defined wantarray){ return \@deleted }
 }
 
 # Returns a list of unique items in the array
@@ -715,7 +725,9 @@ B<Here are the rules>:
 Here's a quick example:
 
 C<< my $sao = Set::Array->new(1,2,3,2,3); >>
+
 C<< my @uniq = $sao->unique(); # Object unmodified.  '@uniq' contains 3 values. >>
+
 C<< $sao->unique(); # Object modified, now contains 3 values >>
 
 B<Here are the exceptions>:
@@ -723,9 +735,9 @@ B<Here are the exceptions>:
 * Methods that report a value, such as boolean methods like I<exists()> or
   other methods such as I<at()> or I<as_hash()>, never modify the object.
 
-* The methods I<clear()>, I<delete()> and I<delete_at()> will B<always> modify
-  the object. It seemed much too counterintuitive to call these methods in any
-  context without actually deleting/clearing the items!
+* The methods I<clear()>, I<delete()>, I<delete_at()>, and I<splice> will
+  B<always> modify the object. It seemed much too counterintuitive to call these
+  methods in any context without actually deleting/clearing/substituting the items!
 
 * The methods I<shift()> and I<pop()> will modify the object B<AND> return
   the value that was shifted or popped from the array.  Again, it seemed
@@ -860,7 +872,13 @@ work.
 
 B<splice(>I<?offset?,?length?,?list?>B<)> - Splice the array starting
 at position I<offset> up to I<length> elements, and replace them with I<list>.
-If no list is provided, the elements are deleted.
+If no list is provided, all elements are deleted.  If length is omitted,
+everything from I<offset> onward is removed.
+
+Returns an array or array ref in list or scalar context, respectively.  This
+method B<always> modifies the object, regardless of context.  If your goal was
+to grab a range of values without modifying the object, use the I<indices>
+method instead.
 
 B<unique()> - Removes/returns non-unique elements from the list.
 

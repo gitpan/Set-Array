@@ -175,10 +175,19 @@ STANDARD METHODS
     shift() - Shifts the first element of the array and returns the shifted
     element.
 
-    sort() - Sorts the contents of the array in alphabetical order. I plan
-    on allowing anonymous sub refs to be passed for finer control of how the
-    array is sorted, but for now I'm working on how I want the syntax to
-    work.
+    sort(*?coderef?*) - Sorts the contents of the array in alphabetical order,
+    or in the order specified by the optional I<coderef>.  Use your
+    standard I<$a> and I<$b> variables within your calling program, e.g:
+
+    my $sao = Set::Array->new(
+      { name => 'Berger', salary => 20000 },
+      { name => 'Berger', salary => 15000 },
+      { name => 'Vera', salary => 25000 },
+    );
+
+    my $subref = sub{ $b->{name} cmp $a->{name} || $b->{salary} <=> $a->{salary} };
+
+    $sao14->sort($subref)->flatten->join->print(1);
 
     splice(*?offset?,?length?,?list?*) - Splice the array starting at
     position *offset* up to *length* elements, and replace them with *list*.

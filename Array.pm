@@ -22,7 +22,7 @@ BEGIN{
    use Exporter;
    use vars qw(@ISA $VERSION);
    @ISA = qw(Exporter);
-   $VERSION = '0.03';
+   $VERSION = '0.04';
 }
 
 sub new{
@@ -449,15 +449,23 @@ sub shift{
 }
 
 # Sorts the array alphabetically.
-# Needs work on the coderef portion
 sub sort{
    my($self,$coderef) = @_;
-	
+
    if($coderef){
+
+      # Complements of Sean McAfee
+      my $caller = caller();
+      local(*a,*b) = do{
+         no strict 'refs';
+         (*{"${caller}::a"},*{"${caller}::b"});
+      };
+
       if( (want('OBJECT')) || (!defined wantarray) ){
          @$self = CORE::sort $coderef @$self;
          return $self;
       }
+
       my @sorted = CORE::sort $coderef @$self;
       if(wantarray){ return @sorted }
       if(defined wantarray){ return \@sorted }
@@ -725,9 +733,7 @@ B<Here are the rules>:
 Here's a quick example:
 
 C<< my $sao = Set::Array->new(1,2,3,2,3); >>
-
 C<< my @uniq = $sao->unique(); # Object unmodified.  '@uniq' contains 3 values. >>
-
 C<< $sao->unique(); # Object modified, now contains 3 values >>
 
 B<Here are the exceptions>:
@@ -865,10 +871,19 @@ B<reverse()> - Reverses the order of the contents of the array.
 B<shift()> - Shifts the first element of the array and returns
 the shifted element.
 
-B<sort()> - Sorts the contents of the array in alphabetical order.
-I plan on allowing anonymous sub refs to be passed for finer control of how
-the array is sorted, but for now I'm working on how I want the syntax to
-work.
+B<sort(>I<?coderef?>B<)> - Sorts the contents of the array in alphabetical
+order, or in the order specified by the optional I<coderef>.  Use your
+standard I<$a> and I<$b> variables within your calling program, e.g:
+
+C<< my $sao = Set::Array->new(
+   { name => 'Berger', salary => 20000 },
+   { name => 'Berger', salary => 15000 },
+   { name => 'Vera', salary => 25000 },
+); >>
+
+C<< my $subref = sub{ $b->{name} cmp $a->{name} || $b->{salary} <=> $a->{salary} }; >>
+
+C<< $sao14->sort($subref)->flatten->join->print(1); >>
 
 B<splice(>I<?offset?,?length?,?list?>B<)> - Splice the array starting
 at position I<offset> up to I<length> elements, and replace them with I<list>.
@@ -1033,7 +1048,7 @@ prepared to backup your claims with benchmarks (and the benchmark code you
 used).  Tests on more than one operating system are preferable.  No, I<map> is
 not always faster - I<foreach> loops usually are.
 
-More flexibility with the sort method and foreach method.
+More flexibility with the foreach method.
 
 =head1 THANKS
 

@@ -23,3 +23,9 @@ Revision history for Perl extension Set::Array.
 0.03  Tue Oct 2 08:00:00 2001
         - Changed the 'splice' method so that its return values
         are consistent with the rest of the module.
+
+0.04  Fri Oct 5 12:00:00 2001
+        - Modified the 'sort' method so that it handles coderefs
+        in the same manner as Perl's built-in 'sort' method (with
+        the exception that the word 'sub' is required).  Thanks
+        to Sean McAfee for the help.

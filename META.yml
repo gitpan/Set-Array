@@ -1,0 +1,20 @@
+--- #YAML:1.0
+name: Set-Array
+version: 0.12
+author:
+  - Ron Savage <ron@savage.net.au>
+abstract: |-
+  Arrays as objects with lots of handy methods (including Set
+  comparisons) and support for method chaining.
+license: artistic
+requires:
+  Carp: 0
+  Want: 0
+build_requires:
+  Test::More: 0
+  Test::Pod: 0
+provides:
+  Set::Array:
+    file: lib/Set/Array.pm
+    version: 0.12
+generated_by: Module::Build version 0.2607

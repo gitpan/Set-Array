@@ -1,5 +1,17 @@
 Revision history for Perl extension Set::Array.
 
+0.12  Mon Jan 10 16:10:00 2005
+	- Switch maintainers from the original author Daniel Berger to Ron Savage
+	- Switch primary build method to Module::Build by adding a Build.PL, and update Makefile.PL
+	- Patch subs intersection() and symmetric_difference() so they handle values == 0, which means
+		they now work for array indexes
+	- Patch sub flatten() to stop warnings like:
+		Using an array as a reference is deprecated at ... Array.pm line 227
+	- Clean up a couple of tests to make them run cleanly
+	- Add a final test for handling 0
+	- Add a POD test
+	- Put tests in t/
+
 0.11  Wed Feb 02 07:01:00 2004
         - Fixed bug in exists() method.  Thanks go to Rob Kinyon for the spot and
           the fix.

@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.11';
+   $VERSION = '0.12';
 }
 
 sub new{
@@ -43,8 +43,8 @@ sub as_hash{
    $arg{key_order} = 'even' unless $arg{key_order};
 
    if( (scalar(@$self) % 2) != 0 ){
-      croak "Odd number of elements in 'as_hash()' call\n";
-   }	
+      Carp::croak "Odd number of elements in 'as_hash()' call";
+   }
    else{
       my %hash;
       if($arg{key_order} eq 'odd'){ %hash = CORE::reverse(@$self) }
@@ -66,7 +66,7 @@ sub at{
 # Delete (or undef) contents of array
 sub clear{
    my($self,$undef) = @_;
-   if($undef){ @{$self} = map{ undef } @{$self} }		
+   if($undef){ @{$self} = map{ undef } @{$self} }
    else{ @{$self} = () }
 
    if(want('OBJECT')){ return $self }
@@ -77,7 +77,7 @@ sub clear{
 # Remove all undef elements
 sub compact{
    my($self) = @_;
-	
+
    if( (want('OBJECT')) || (!defined wantarray) ){
       @$self = grep defined $_, @$self;
       return $self;
@@ -97,7 +97,7 @@ sub count{
 
    # Count undefined elements
    unless(defined($val)){
-      foreach(@$self){ $hits++ unless $_ }  
+      foreach(@$self){ $hits++ unless $_ }
       if(want('OBJECT')){ return bless \$hits }
       return $hits;
    }
@@ -112,7 +112,7 @@ sub delete{
    my($self,@vals) = @_;
 
    unless(defined($vals[0])){
-      croak "Undefined value passed to 'delete()' method\n";
+      Carp::croak "Undefined value passed to 'delete()' method";
    }
 
    foreach my $val(@vals){
@@ -131,16 +131,16 @@ sub delete_at{
    my($self,$start_index, $end_index) = @_;
 
    unless(defined($start_index)){
-      croak "No index passed to 'delete_at()' method\n";
+      Carp::croak "No index passed to 'delete_at()' method";
    }
-	
+
    unless(defined($end_index)){ $end_index = 0 }
    if( ($end_index eq 'end') || ($end_index == -1) ){ $end_index = $#$self }
 
    my $num = ($end_index - $start_index) + 1;
 
    CORE::splice(@{$self},$start_index,$num);
-	
+
    if(want('OBJECT') || !(defined wantarray)){ return $self }
    if(wantarray){ return @$self }
    if(defined wantarray){ return \@{$self} }
@@ -149,7 +149,7 @@ sub delete_at{
 # Returns a list of duplicate items in the array.
 sub duplicates{
    my($self) = @_;
-   
+
    my(@dups,%count);
 
    if(want('OBJECT') || !(defined wantarray)){
@@ -161,7 +161,7 @@ sub duplicates{
       @$self = @dups;
       return $self;
    }
-   
+
    CORE::foreach(@$self){
       $count{$_}++;
       if($count{$_} > 1){ CORE::push(@dups,$_) }
@@ -174,7 +174,7 @@ sub duplicates{
 # Tests to see if value exists anywhere within array
 sub exists{
    my($self,$val) = @_;
-   
+
    # Check specifically for undefined values
    unless(defined($val)){
       foreach(@$self){ unless($_){ return 1 } }
@@ -192,9 +192,9 @@ sub exists{
 sub fill{
    my($self,$val, $start, $length) = @_;  # Start may also be a range
    return unless(scalar(@{$self}) > 0);   # Test for empty array
-	
+
    unless(defined($start)){ $start = 0 }
-	
+
    if($length){ $length += $start }
    else{ $length = $#$self + 1}
 
@@ -202,7 +202,7 @@ sub fill{
       CORE::foreach($1..$2){ @{$self}[$_] = $val }
       return $self;
    }
-   
+
    CORE::foreach(my $n=$start; $n<$length; $n++){ @{$self}[$n] = $val }
 
    if(want('OBJECT')){ return $self }
@@ -223,13 +223,13 @@ sub flatten{
 
    if( (want('OBJECT')) || (!defined wantarray) ){
       for(my $n=0; $n<=$#$self; $n++){
-	 if( ref(@{$self}[$n]) eq 'ARRAY' ){
-	    CORE::splice(@{$self},$n,1,@{@{$self}->[$n]});
+	 if( ref($$self[$n]) eq 'ARRAY' ){
+	    CORE::splice(@$self,$n,1,@{$$self[$n]});
 	    $n--;
 	    next;
 	 }
-         if( ref(@{$self}[$n]) eq 'HASH' ){
-            CORE::splice(@{$self},$n,1,%{@{$self}->[$n]});
+         if( ref($$self[$n]) eq 'HASH' ){
+            CORE::splice(@$self,$n,1,%{$$self[$n]});
             --$n;
 	    next;
          }
@@ -259,7 +259,7 @@ sub foreach{
    my($self,$coderef) = @_;
 
    unless(ref($coderef) eq 'CODE'){
-      croak "Invalid code reference passed to 'foreach' method";
+      Carp::croak "Invalid code reference passed to 'foreach' method";
    }
 
    CORE::foreach (@$self){ &$coderef }
@@ -278,9 +278,9 @@ sub impose{
       $string = $placement;
       $placement = 'append';
    }
- 
+
    unless(CORE::defined($string)){
-      croak("No string supplied to 'impose()' method");
+      Carp::croak "No string supplied to 'impose()' method";
    }
 
    if(want('OBJECT') or !(defined wantarray)){
@@ -292,7 +292,7 @@ sub impose{
    my @copy = @$self;
    if($placement =~ /append/){ foreach(@copy){ $_ = $_ . $string } }
    if($placement =~ /prepend/){ foreach(@copy){ $_ = $string . $_ } }
-   
+
    if(wantarray){ return @copy }
    if(defined wantarray){ return \@copy }
 }
@@ -329,9 +329,9 @@ sub indices{
    my @iArray;
 
    unless(defined($indices[0])){
-      croak "No index/indices passed to 'indices' (aka 'get') method\n";
+      Carp::croak "No index/indices passed to 'indices' (aka 'get') method";
    }
-	
+
    CORE::foreach(@indices){
       if($_ =~ /(\d)\.\.(\d)/){ for($1..$2){
          CORE::push(@iArray,@{$self}[$_]) };
@@ -364,9 +364,9 @@ sub is_empty{
 # Set a specific index to a specific value
 sub set{
    my($self,$index,$val) = @_;
-   
+
    unless(defined($index) && $val){
-      croak "No index or value passed to 'set()' method\n";
+      Carp::croak "No index or value passed to 'set()' method";
    }
 
    if(want('OBJECT')){
@@ -428,8 +428,8 @@ sub max{
 sub pack{
    my($self,$template) = @_;
 
-   croak("No template provided to 'pack()' method") unless $template;
-   
+   Carp::croak "No template provided to 'pack()' method" unless $template;
+
    if(want('OBJECT') || !(defined wantarray)){
       $self->[0] = CORE::pack($template, @$self);
       $#$self = 0;
@@ -451,7 +451,7 @@ sub pop{
 sub print{
    my($self,$nl) = @_;
 
-   if(reftype($self) eq 'ARRAY'){	   	
+   if(reftype($self) eq 'ARRAY'){
       if(wantarray){ return @$self }
       if(defined wantarray){ return \@{$self} }
       print @$self;
@@ -467,7 +467,7 @@ sub print{
       if($nl){ print "\n" }
    }
 
-   return $self;	
+   return $self;
 }
 
 # Pushes an element onto the end of the array
@@ -492,7 +492,7 @@ sub randomize{
       $ref = \@temp;
    }
    else{ $ref = $self }
-	
+
    for($i = @$ref; --$i; ){
       my $j = int rand ($i+1);
       next if $i == $j;
@@ -541,7 +541,7 @@ sub rindex{
       }
    }
    return undef;
-   
+
 }
 
 # Moves the last element of the array to the front, or vice-versa
@@ -566,7 +566,7 @@ sub rotate{
    CORE::push(@temp,CORE::shift(@temp));
    if(wantarray){ return @temp }
    if(defined wantarray){ return \@temp }
-}	
+}
 
 # Shifts and returns the first element off the array
 sub shift{
@@ -644,11 +644,11 @@ sub splice{
 # Returns a list of unique items in the array
 sub unique{
    my($self,$nc) = @_;
-		
+
    my %item;
-	
+
    CORE::foreach(@$self){ $item{$_}++ }
-   
+
    if(want('OBJECT') || !(defined wantarray)){
       @$self = keys %item;
       %item = ();
@@ -732,7 +732,7 @@ sub difference{
       if($item2{$_}){ next }
       CORE::push(@diff,$_);
    }
-	
+
    if(want('OBJECT') || !(defined wantarray)){
       @$op1 = @diff;
       return $op1;
@@ -748,7 +748,7 @@ sub intersection{
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
    my(%count,@int);
-   @count{@$op1} = @$op1;
+   @count{@$op1} = (1) x @$op1;
 
    if(want('OBJECT') || !(defined wantarray)){
       @$op1 = CORE::grep{CORE::delete $count{$_}} @$op2;
@@ -766,7 +766,7 @@ sub is_equal{
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
    my(%count1, %count2);
-	
+
    if(scalar(@$op1) != scalar(@$op2)){ return 0 }
 
    CORE::foreach(@$op1){ $count1{$_}++ }
@@ -786,7 +786,7 @@ sub not_equal{
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
    my(%count1, %count2);
-	
+
    if(scalar(@$op1) != scalar(@$op2)){ return 1 }
 
    CORE::foreach(@$op1){ $count1{$_}++ }
@@ -806,8 +806,8 @@ sub symmetric_difference{
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
    my(%count1,%count2,%count3,@symdiff);
-   @count1{@$op1} = @$op1;
-   @count2{@$op2} = @$op2;
+   @count1{@$op1} = (1) x @$op1;
+   @count2{@$op2} = (1) x @$op2;
 
    CORE::foreach(CORE::keys %count1,CORE::keys %count2){ $count3{$_}++ }
 
@@ -1028,12 +1028,12 @@ popped element.
 
 B<print(>I<?1?>B<)> - Prints the contents of the array. If a '1'
 is provided as an argument, the output will automatically be terminated
-with a newline. 
+with a newline.
 
 This also doubles as a 'contents' method, if you just want to make a copy
 of the array, e.g. my @copy = $sao-E<gt>print;
 
-Can be called in void or list context, e.g. 
+Can be called in void or list context, e.g.
 
 C<< $sao->print(); # or... >>
 C<< print "Contents of array are: ", $sao->print(); >>
@@ -1096,7 +1096,7 @@ and the odd elements serve as the keys. The default is I<even>.
 Of course, if you don't care about insertion order, you could just as well
 do something like, C<$sao->reverse->as_hash;>
 
-Dies if the array contains an odd number of elements.  This method does
+Carp::croak's if the array contains an odd number of elements.  This method does
 not actually modify the object itself in any way.  It just returns a plain
 hash in list context or a hash reference in scalar context.  The reference
 is not blessed, therefore if this method is called as part of a chain, it
@@ -1192,7 +1192,7 @@ C<$sao2-E<gt>compact()-E<gt>length();>
 
 I<count the number of unique elements within an array, excluding undef?>
 
-C<$sao2-E<gt>compact()-E<gt>unique()-E<gt>length();> 
+C<$sao2-E<gt>compact()-E<gt>unique()-E<gt>length();>
 
 I<print a range of indices?>
 
@@ -1261,8 +1261,12 @@ chaining be without it?
 
 =head1 AUTHOR
 
-Daniel Berger
+Original author: Daniel Berger
 djberg96 at hotmail dot com
 imperator on IRC (freenode)
+
+Maintainer since V 0.12: Ron Savage <ron@savage.net.au>
+
+Home page: http://savage.net.au/index.html
 
 =cut

@@ -20,12 +20,12 @@ my $flat  = Set::Array->new([1,2,3],['a','b','c']);
 my $fe    = Set::Array->new(1,2,3,4,5);
 
 # VERSION check
-ok("$Set::Array::VERSION" == 0.11);
+ok("$Set::Array::VERSION" == 0.12);
 
 # as_hash() tests
 ok(%hash = $s5->as_hash());         # base method
 ok(%hash = $s5->to_hash());         # alias
-ok(ref($s5->as_hash()) eq "HASH");  # return type 
+ok(ref($s5->as_hash()) eq "HASH");  # return type
 
 # at() tests
 ok($s1->at(0) eq "fname");          # zero index
@@ -35,14 +35,14 @@ ok($s1->at(-1) eq "berger");        # negative index
 # clear() tests
 ok($s2->clear(1));                  # undef instead of destroy
 ok(scalar(@$s2) == 3);              # make sure length remains
-ok(@$s2[0] eq undef);               # and that remaining values are undef
+ok(! defined $$s2[0]);              # and that remaining values are undef
 ok($s2->clear());                   # destroy instead of undef
 ok(scalar(@$s2) == 0);              # make sure length is 0
 
 # compact() tests
 ok($s3->compact());                 # base method
 $s3->compact();                     # call in void context...
-ok(scalar(@$s3) == 3);              # ...and check that length is now 3 
+ok(scalar(@$s3) == 3);              # ...and check that length is now 3
 
 # count() tests
 ok($s4->count("three") == 2);       # positive results
@@ -78,7 +78,7 @@ ok($empty->fill("foo"));                     # base method
 ok(eq_array($empty,["foo","foo","foo"]));    # fill
 
 # first() tests
-ok($s5->first == "alpha");
+ok($s5->first eq "alpha");
 
 # flatten() tests
 @ans = qw/1 2 3 a b c/;
@@ -87,3 +87,8 @@ ok(eq_array(\@t,\@ans));
 
 # foreach() tests
 ok($fe->foreach(sub{ $_++ }));
+
+my($s6) = Set::Array -> new(0, 2, 4, 6);	# Test handling of 0.
+my($s7) = Set::Array -> new(0, 3, 6, 9);
+
+ok(eq_array([$s6 -> intersection($s7) -> print()], [0, 6]) );

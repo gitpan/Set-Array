@@ -1,6 +1,10 @@
-Array.pm
+Build.PL
 Changes
+lib/Set/Array.pm
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
+MANIFEST.SKIP
 README
-test.pl
+t/pod.t
+t/test.t
+META.yml

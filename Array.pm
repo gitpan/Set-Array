@@ -6,7 +6,7 @@
 package Set::Array;
 use strict;
 use attributes qw(reftype);
-use subs qw(foreach push pop shift join splice unshift);
+use subs qw(foreach pack push pop shift join rindex splice unpack unshift);
 use Want;
 use Carp;
 
@@ -26,10 +26,8 @@ use overload
    "fallback" => 1;
 
 BEGIN{
-   use Exporter;
-   use vars qw(@ISA $VERSION);
-   @ISA = qw(Exporter);
-   $VERSION = '0.07';
+   use vars qw($VERSION);
+   $VERSION = '0.08';
 }
 
 sub new{
@@ -133,21 +131,14 @@ sub delete_at{
       croak "No index passed to 'delete_at()' method\n";
    }
 	
-   unless(defined($end_index)){ $end_index = 0 }
+   unless(defined($end_index)){ $end_index = 1 }
    if( ($end_index eq 'end') || ($end_index == -1) ){ $end_index = $#$self }
-   if($start_index == 0){ $end_index++ }
+
    my @deleted = CORE::splice(@{$self},$start_index,$end_index);
 	
    if(want('OBJECT')){ return $self }
    if(wantarray){ return @$self }
    if(defined wantarray){ return \@{$self} }
-}
-
-# Tests to see if array contains any elements
-sub empty{
-   my($self) = @_;
-   if( (scalar @{$self}) > 0){ return 0 }
-   return 1;
 }
 
 # Tests to see if value exists anywhere within array
@@ -235,8 +226,8 @@ sub flatten{
 sub foreach{
    my($self,$coderef) = @_;
 
-   unless($coderef){
-      croak "No code reference passed to 'foreach' method in Set::Array\n";
+   unless(ref($coderef) eq 'CODE'){
+      croak "Invalid code reference passed to 'foreach' method";
    }
 
    CORE::foreach (@$self){ &$coderef }
@@ -244,6 +235,34 @@ sub foreach{
    if(want('OBJECT')){ return $self }
    if(wantarray){ return @$self }
    if(defined wantarray){ return \@{$self} }
+}
+
+# Append or prepend a string to each element of the array
+sub impose{
+   my($self,$placement,$string) = @_;
+
+   # Set defaults
+   unless($placement =~ /\bappend\b|\bprepend\b/i){
+      $string = $placement;
+      $placement = 'append';
+   }
+ 
+   unless(CORE::defined($string)){
+      croak("No string supplied to 'impose()' method");
+   }
+
+   if(want('OBJECT') or !(defined wantarray)){
+      if($placement =~ /append/){ foreach(@$self){ $_ = $_ . $string } }
+      if($placement =~ /prepend/){ foreach(@$self){ $_ = $string . $_ } }
+      return $self;
+   }
+
+   my @copy = @$self;
+   if($placement =~ /append/){ foreach(@copy){ $_ = $_ . $string } }
+   if($placement =~ /prepend/){ foreach(@copy){ $_ = $string . $_ } }
+   
+   if(wantarray){ return @copy }
+   if(defined wantarray){ return \@copy }
 }
 
 # Returns the index of the first occurrence within the array
@@ -302,6 +321,13 @@ sub indices{
 
 # Alias for 'indices()'
 *get = \&indices;
+
+# Tests to see if array contains any elements
+sub is_empty{
+   my($self) = @_;
+   if( (scalar @{$self}) > 0){ return 0 }
+   return 1;
+}
 
 # Set a specific index to a specific value
 sub set{
@@ -365,6 +391,20 @@ sub max{
 
    if(want('OBJECT')){ return bless \$max }
    return $max;
+}
+
+sub pack{
+   my($self,$template) = @_;
+
+   croak("No template provided to 'pack()' method") unless $template;
+   
+   if(want('OBJECT') || !(defined wantarray)){
+      $self->[0] = CORE::pack($template, @$self);
+      $#$self = 0;
+      return $self;
+   }
+
+   return CORE::pack($template,@$self);
 }
 
 # Pops and returns the last element off the array
@@ -444,6 +484,32 @@ sub reverse{
    my @temp = CORE::reverse @$self;
    if(wantarray){ return @temp }
    if(defined wantarray){ return \@temp }
+}
+
+# Same as index, except that it returns the position of the
+# last occurrence, instead of the first.
+sub rindex{
+   my($self,$val) = @_;
+
+   # Test for undefined value
+   unless(defined($val)){
+      for(my $n = $#$self; $n >= 0; $n--){
+         unless($self->[$n]){
+            if(want('OBJECT')){ return bless \$n }
+            if(defined wantarray){ return $n }
+         }
+      }
+   }
+
+   for(my $n = $#$self; $n >= 0; $n--){
+      next unless defined $self->[$n];
+      if( $self->[$n] =~ /$val/ ){
+         if(want('OBJECT')){ return bless \$n }
+         if(defined wantarray){ return $n }
+      }
+   }
+   return undef;
+   
 }
 
 # Moves the last element of the array to the front, or vice-versa
@@ -667,6 +733,8 @@ sub is_equal{
    CORE::foreach(@$op2){ $count2{$_}++ }
 
    CORE::foreach my $key(keys %count1){
+      return 0 unless CORE::defined($count1{$key});
+      return 0 unless CORE::defined($count2{$key});
       if($count1{$key} ne $count2{$key}){ return 0 }
    }
    return 1;
@@ -685,6 +753,8 @@ sub not_equal{
    CORE::foreach(@$op2){ $count2{$_}++ }
 
    CORE::foreach my $key(keys %count1){
+      return 1 unless CORE::defined($count1{$key});
+      return 1 unless CORE::defined($count2{$key});
       if($count1{$key} ne $count2{$key}){ return 1 }
    }
    return 0;
@@ -800,12 +870,12 @@ B<Here are the exceptions>:
 
 =head1 BOOLEAN METHODS
 
-B<empty()> - Returns 1 if the array is empty, 0 otherwise.  Empty is defined
-as having a length of 0.
-
 B<exists(>I<val>B<)> - Returns 1 if I<val> exists within the array,
 0 otherwise.  If no value (or I<undef>) is passed, then this
 method will test for the existence of undefined values within the array.
+
+B<is_empty()> - Returns 1 if the array is empty, 0 otherwise.  Empty is
+defined as having a length of 0.
 
 =head1 STANDARD METHODS
 
@@ -891,6 +961,10 @@ B<length()> - Returns the number of elements within the array.
 B<max()> - Returns the maximum value of an array.  No effort is
 made to check for non-numeric data.
 
+B<pack(>I<template>B<)> - Packs the contents of the array into a
+string (in scalar context) or a single array element (in object
+or void context).
+
 B<pop()> - Removes the last element from the array.  Returns the
 popped element.
 
@@ -912,6 +986,9 @@ reference in list or scalar context, respectively.  Note that it does
 B<not> return the length in scalar context.  Use the I<length> method for that.
 
 B<reverse()> - Reverses the order of the contents of the array.
+
+B<rindex(>I<val>B<)> - Similar to the 'index()' method, except that it
+returns the index of the last I<val> found within the array.
 
 B<set(>I<index>,I<value>B<)> - Sets the element at I<index> to I<value>,
 replacing whatever may have already been there.
@@ -966,6 +1043,10 @@ not actually modify the object itself in any way.  It just returns a plain
 hash in list context or a hash reference in scalar context.  The reference
 is not blessed, therefore if this method is called as part of a chain, it
 must be the last method called.
+
+B<impose(>I<?append/prepend?>,I<string>B<)> - Appends or prepends the
+specified string to each element in the array.  Specify the method by
+using either the keyword 'append' or 'prepend'.  The default is 'append'.
 
 B<randomize()> - Randomizes the order of the elements within the
 array.
@@ -1059,7 +1140,7 @@ C<if($sao1-E<gt>is_equal($sao2){ ... } # Same thing>
 
 I<fill an array with a value, but only if it's not empty?>
 
-C<if(!$sao1-E<gt>empty()){ $sao1-E<gt>fill('x') }>
+C<if(!$sao1-E<gt>is_empty()){ $sao1-E<gt>fill('x') }>
 
 I<shift an element off the array and return the shifted value?>
 

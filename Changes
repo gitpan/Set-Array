@@ -50,3 +50,13 @@ Revision history for Perl extension Set::Array.
         - Fixed several methods that weren't handling '0' correctly.
         - Replaced 'die' with 'croak' throughout module.
         - Updated the docs.
+
+0.08  Fri Dec 21 09:00:00 2001
+        - Modified 'is_equal' and 'not_equal' to deal with undef values
+        - Stricter error checking in 'foreach' method
+        - Added 'impose()' method
+        - Added 'pack()' method
+        - Added 'rindex()' method
+        - Added the beginnings of a test suite
+        - Fixed a major bug in the 'delete_at()' method (oops)
+        - Renamed 'empty()' method to 'is_empty()'

@@ -73,12 +73,12 @@ OBJECT BEHAVIOR
     use in conjunction with the *print()* method.
 
 BOOLEAN METHODS
-    empty() - Returns 1 if the array is empty, 0 otherwise. Empty is defined
-    as having a length of 0.
-
     exists(*val*) - Returns 1 if *val* exists within the array, 0 otherwise.
     If no value (or *undef*) is passed, then this method will test for the
     existence of undefined values within the array.
+
+    is_empty() - Returns 1 if the array is empty, 0 otherwise. Empty is
+    defined as having a length of 0.
 
 STANDARD METHODS
     at(*index*) - Returns the item at the given index (or *undef*). A
@@ -162,6 +162,9 @@ STANDARD METHODS
     max() - Returns the maximum value of an array. No effort is made to
     check for non-numeric data.
 
+    pack(*template*) - Packs the contents of the array into a string (in
+    scalar context) or a single array element (in object or void context).
+
     pop() - Removes the last element from the array. Returns the popped
     element.
 
@@ -182,6 +185,9 @@ STANDARD METHODS
     length in scalar context. Use the *length* method for that.
 
     reverse() - Reverses the order of the contents of the array.
+
+    rindex(*val*) - Similar to the 'index()' method, except that it returns
+    the index of the last *val* found within the array.
 
     set(*index*,*value*) - Sets the element at *index* to *value*, replacing
     whatever may have already been there.
@@ -235,6 +241,10 @@ ODDBALL METHODS
     plain hash in list context or a hash reference in scalar context. The
     reference is not blessed, therefore if this method is called as part of
     a chain, it must be the last method called.
+
+    impose(*?append/prepend?*,*string*) - Appends or prepends the specified
+    string to each element in the array. Specify the method by using either
+    the keyword 'append' or 'prepend'. The default is 'append'.
 
     randomize() - Randomizes the order of the elements within the array.
 
@@ -322,7 +332,7 @@ EXAMPLES
 
     *fill an array with a value, but only if it's not empty?*
 
-    "if(!$sao1->empty()){ $sao1->fill('x') }"
+    "if(!$sao1->is_empty()){ $sao1->fill('x') }"
 
     *shift an element off the array and return the shifted value?*
 

@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.08';
+   $VERSION = '0.09';
 }
 
 sub new{
@@ -659,11 +659,13 @@ sub bag{
    my($op1, $op2, $reversed) = @_;
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
-   CORE::push(@$op1,@$op2);
-
-   if(want('OBJECT')){ return $op1 }
-   return @$op1 if wantarray;
-   return \@{$op1} if defined wantarray;
+   if(want('OBJECT')){
+      CORE::push(@$op1,@$op2);
+      return $op1;
+   }
+   my @copy = (@$op1,@$op2);
+   return @copy if wantarray;
+   return \@copy if defined wantarray;
 }
 
 # Needs work
@@ -709,15 +711,17 @@ sub intersection{
    my($op1, $op2, $reversed) = @_;
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
-   my(%count,@isect);
-   CORE::foreach(@$op1,@$op2){ $count{$_}++ }
-      CORE::foreach(CORE::keys %count){
-      if($count{$_} >= 2){ CORE::push(@isect,$_) }
+   my(%count,@int);
+   @count{@$op1} = @$op1;
+
+   if(want('OBJECT')){
+      @$op1 = CORE::grep{CORE::delete $count{$_}} @$op2;
+      return $op1;
    }
 
-   if(want('OBJECT')){ return bless \@isect }
-   if(wantarray){ return @isect }
-   if(defined wantarray){ return \@isect }
+   @int = CORE::grep{CORE::delete $count{$_}} @$op2;
+   if(wantarray){ return @int }
+   if(defined wantarray){ return \@int }
 }
 
 # Tests to see if arrays are equal (regardless of order)
@@ -765,13 +769,19 @@ sub symmetric_difference{
    my($op1, $op2, $reversed) = @_;
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
-   my(%item,@symdiff);	
-   CORE::foreach(@$op1,@$op2){ $item{$_}++ }
-   CORE::foreach(keys %item){
-      if($item{$_} == 1){ CORE::push(@symdiff,$_) }
+   my(%count1,%count2,%count3,@symdiff);
+   @count1{@$op1} = @$op1;
+   @count2{@$op2} = @$op2;
+
+   CORE::foreach(CORE::keys %count1,CORE::keys %count2){ $count3{$_}++ }
+
+   if(want('OBJECT')){
+      @$op1 = CORE::grep{$count3{$_} == 1} CORE::keys %count3;
+      return $op1;
    }
 
-   if(want('OBJECT')){ return bless \@symdiff }
+   @symdiff = CORE::grep{$count3{$_} == 1} CORE::keys %count3;
+   print CORE::join(', ',@symdiff), "\n";
    if(wantarray){ return @symdiff }
    if(defined wantarray){ return \@symdiff }
 }
@@ -846,7 +856,9 @@ B<Here are the rules>:
 Here's a quick example:
 
 C<< my $sao = Set::Array->new(1,2,3,2,3); >>
+
 C<< my @uniq = $sao->unique(); # Object unmodified.  '@uniq' contains 3 values. >>
+
 C<< $sao->unique(); # Object modified, now contains 3 values >>
 
 B<Here are the exceptions>:
@@ -1111,7 +1123,9 @@ B<+> or B<union> - Returns the union of both sets.  Duplicates excluded.
 For our examples, I'll create 3 different objects
 
 my $sao1 = Set::Array->new(1,2,3,a,b,c,1,2,3);
+
 my $sao2 = Set::Array->new(1,undef,2,undef,3,undef);
+
 my $sao3 = Set::Array->new(1,2,3,['a','b','c'],{name=>"Dan"});
 
 B<How do I...>
@@ -1183,11 +1197,11 @@ not always faster - I<foreach> loops usually are in my experience.
 
 More flexibility with the foreach method (perhaps with iterators?).
 
-Ultimately, I want to create a Set::Hash and Set::String module (both already
-in the works) and have all three modules bundled together.  Then, whenever
-I return a string or a hash (instead of an array),  I return them as objects,
-allowing you to continue method chaining no matter what type of data is
-returned, using methods appropriate for the return type.
+Ultimately, I want to create a Set::Hash and Set::String module (the latter
+implemented and the former in the works) and have all three modules bundled
+together.  Then, whenever I return a string or a hash (instead of an array),
+I return them as objects, allowing you to continue method chaining no matter
+what type of data is returned, using methods appropriate for the return type.
 
 This probably means a major re-write using a virtual class, but the
 API probably won't change for the subclasses.

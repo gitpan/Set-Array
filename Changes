@@ -60,3 +60,9 @@ Revision history for Perl extension Set::Array.
         - Added the beginnings of a test suite
         - Fixed a major bug in the 'delete_at()' method (oops)
         - Renamed 'empty()' method to 'is_empty()'
+
+0.09  Fir Jun 21 11:22:00 2002
+        - bag() method calling context issue fixed
+        - The intersection() method (taken from the Cookbook) was broken.
+	  It has been fixed.  Thanks to James Keenan for the spot.
+	- Some minor POD fixes.

@@ -21,6 +21,9 @@ my $s4 = Set::Array->new(qw(one two three 1 2 3 one two three));
 my $s5 = Set::Array->new(qw(alpha beta gamma delta));
 my $s6 = Set::Array->new([1,2,3],['a','b','c']);
 
+my $alist = Set::Array->new(qw/alpha beta beta gamma delta Delta epsilon/);
+my $blist = Set::Array->new(qw/gamma delta delta epsilon zeta eta 12345/);
+
 ok(%hash = $s1->as_hash);
 ok($s1->at(0) eq 'fname');
 ok($s1->delete('berger','lname')->length == 2);

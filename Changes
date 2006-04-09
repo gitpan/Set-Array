@@ -1,5 +1,13 @@
 Revision history for Perl extension Set::Array.
 
+0.13  Sun Apr 09 13:58:00 2006
+	- Incorporate the patch supplied by Marke, with thanks. Now the method 'difference' returns
+		the objects in the difference, and not the stingified versions of those objects.
+		Also, Marke's test has been added to test.t.
+		Note: The undocument method 'complement' has not been updated. Email me suggestions if
+		o You know exactly what it ought to do
+		o How it differs from calling 'difference' with the $reversed flag set
+
 0.12  Mon Jan 10 16:10:00 2005
 	- Switch maintainers from the original author Daniel Berger to Ron Savage
 	- Switch primary build method to Module::Build by adding a Build.PL, and update Makefile.PL

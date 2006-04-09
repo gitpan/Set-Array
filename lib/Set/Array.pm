@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.12';
+   $VERSION = '0.13';
 }
 
 sub new{
@@ -725,12 +725,12 @@ sub difference{
    ($op2,$op1) = ($op1,$op2) if $reversed;
 
    my(%item1,%item2,@diff);
-   CORE::foreach(@$op1){ $item1{$_}++ }
-   CORE::foreach(@$op2){ $item2{$_}++ }
+   CORE::foreach(@$op1){ $item1{$_}=$_ }
+   CORE::foreach(@$op2){ $item2{$_}=$_ }
 
    CORE::foreach(keys %item1){
-      if($item2{$_}){ next }
-      CORE::push(@diff,$_);
+      if(exists $item2{$_}){ next }
+      CORE::push(@diff,$item1{$_});
    }
 
    if(want('OBJECT') || !(defined wantarray)){

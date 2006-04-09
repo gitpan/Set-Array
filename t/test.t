@@ -3,7 +3,7 @@
 # `make test'. After `make install' it should work as `perl test.pl'
 ##########################################################################
 
-use Test::More qw(no_plan);
+use Test::More tests => 39;
 BEGIN{ use_ok('Set::Array') }
 
 my $s1 = Set::Array->new(qw(fname dan lname berger));
@@ -88,7 +88,37 @@ ok(eq_array(\@t,\@ans));
 # foreach() tests
 ok($fe->foreach(sub{ $_++ }));
 
+{
+	# object test - make sure that objects are returned if set consists of objects
+	my $list1 = Set::Array->new(map { MyTestObj->new(value => $_) } 1..8);
+	my $list2 = Set::Array->new(map { MyTestObj->new(value => $_) } 3..5);
+	my @diff = $list1->difference($list2);
+	my %items = map { ref($_) eq 'MyTestObj' ? ($_->value => 1) : () } @diff;
+	ok($items{1} && $items{2} && !$items{3} && !$items{4} && !$items{5} &&
+	$items{6} && $items{7} && $items{8});
+
+	# simple test class
+
+	package MyTestObj;
+
+	use overload '""' => sub {
+	 "MyTestObj=".shift->value;
+	};
+
+	sub new
+	{
+	 my $class = shift;
+	 $class = ref($class) if ref($class);
+	 bless { @_ }, $class;
+	}
+
+	sub value
+	{
+	 shift->{value}
+	}
+}
+
 my($s6) = Set::Array -> new(0, 2, 4, 6);	# Test handling of 0.
 my($s7) = Set::Array -> new(0, 3, 6, 9);
 
-ok(eq_array([$s6 -> intersection($s7) -> print()], [0, 6]) );
+ok(is_deeply([$s6 -> intersection($s7) -> print()], [0, 6]) );

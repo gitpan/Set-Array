@@ -1,6 +1,6 @@
 ---
 name: Set-Array
-version: 0.13
+version: 0.14
 author:
   - 'Ron Savage <ron@savage.net.au>'
 abstract: |-
@@ -16,5 +16,5 @@ build_requires:
 provides:
   Set::Array:
     file: lib/Set/Array.pm
-    version: 0.13
+    version: 0.14
 generated_by: Module::Build version 0.2611

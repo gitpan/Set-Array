@@ -1,5 +1,8 @@
 Revision history for Perl extension Set::Array.
 
+0.14  Mon Apr 10 19:51:00 2006
+	- Fix test which used a hard-coded version number
+
 0.13  Sun Apr 09 13:58:00 2006
 	- Incorporate the patch supplied by Marke, with thanks. Now the method 'difference' returns
 		the objects in the difference, and not the stingified versions of those objects.

@@ -3,7 +3,7 @@
 # `make test'. After `make install' it should work as `perl test.pl'
 ##########################################################################
 
-use Test::More tests => 39;
+use Test::More tests => 40;
 BEGIN{ use_ok('Set::Array') }
 
 my $s1 = Set::Array->new(qw(fname dan lname berger));
@@ -121,4 +121,11 @@ ok($fe->foreach(sub{ $_++ }));
 my($s6) = Set::Array -> new(0, 2, 4, 6);	# Test handling of 0.
 my($s7) = Set::Array -> new(0, 3, 6, 9);
 
-ok(is_deeply([$s6 -> intersection($s7) -> print()], [0, 6]) );
+ok(is_deeply([$s6 -> intersection($s7)], [0, 6]) );
+
+# Test intersection patch in V 0.15.
+
+$s6 = Set::Array -> new(0, 2, 4, 6, 0, 6);
+$s7 = Set::Array -> new(0, 3, 6, 9, 0, 6);
+
+ok(eq_array([$s6 -> intersection($s7)], [0, 6, 0, 6]) );

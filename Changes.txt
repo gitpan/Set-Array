@@ -1,5 +1,10 @@
 Revision history for Perl extension Set::Array.
 
+0.15  Tue Jul 22 10:55:00 2008
+	  - Patch sub intersection to fix RT#29871. Add corresponding test
+	  - Rename Changes to Changes.txt to match my other modules
+	  - Add Changelog.ini
+
 0.14  Mon Apr 10 19:51:00 2006
 	- Fix test which used a hard-coded version number
 

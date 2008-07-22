@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.14';
+   $VERSION = '0.15';
 }
 
 sub new{
@@ -223,15 +223,15 @@ sub flatten{
 
    if( (want('OBJECT')) || (!defined wantarray) ){
       for(my $n=0; $n<=$#$self; $n++){
-	 if( ref($$self[$n]) eq 'ARRAY' ){
-	    CORE::splice(@$self,$n,1,@{$$self[$n]});
-	    $n--;
-	    next;
-	 }
+   if( ref($$self[$n]) eq 'ARRAY' ){
+        CORE::splice(@$self,$n,1,@{$$self[$n]});
+        $n--;
+        next;
+   }
          if( ref($$self[$n]) eq 'HASH' ){
             CORE::splice(@$self,$n,1,%{$$self[$n]});
             --$n;
-	    next;
+            next;
          }
       }
       return $self
@@ -746,18 +746,32 @@ sub difference{
 sub intersection{
    my($op1, $op2, $reversed) = @_;
    ($op2,$op1) = ($op1,$op2) if $reversed;
+   my($result) = [];
 
-   my(%count,@int);
-   @count{@$op1} = (1) x @$op1;
+   my($i1, $i2);
+   my(%seen);
 
-   if(want('OBJECT') || !(defined wantarray)){
-      @$op1 = CORE::grep{CORE::delete $count{$_}} @$op2;
-      return $op1;
+   CORE::foreach $i1 (0 .. $#$op1){
+      CORE::foreach $i2 (0 .. $#$op2){
+         # If we have matched this value in @$op2 before,
+         # do not match it in the same place again in @$op1.
+
+         next if ($seen{$$op2[$i2]} eq $i1);
+
+         if ($$op1[$i1] eq $$op2[$i2]){
+            CORE::push @$result, $$op1[$i1];
+
+            $seen{$$op2[$i2]} = $i1;
+         }
+      }
    }
 
-   @int = CORE::grep{CORE::delete $count{$_}} @$op2;
-   if(wantarray){ return @int }
-   if(defined wantarray){ return \@int }
+   if(want('OBJECT') || !(defined wantarray)){
+      return $result;
+   }
+
+   if(wantarray){ return @$result }
+   if(defined wantarray){ return $result }
 }
 
 # Tests to see if arrays are equal (regardless of order)

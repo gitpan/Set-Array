@@ -20,7 +20,7 @@ my $flat  = Set::Array->new([1,2,3],['a','b','c']);
 my $fe    = Set::Array->new(1,2,3,4,5);
 
 # VERSION check
-ok("$Set::Array::VERSION" == 0.16);
+ok("$Set::Array::VERSION" == 0.17);
 
 # as_hash() tests
 ok(%hash = $s5->as_hash());         # base method

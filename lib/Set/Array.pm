@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.16';
+   $VERSION = '0.17';
 }
 
 sub new{
@@ -756,7 +756,7 @@ sub intersection{
          # If we have matched this value in @$op2 before,
          # do not match it in the same place again in @$op1.
 
-         next if ($seen{$$op2[$i2]} eq $i1);
+         next if (defined $seen{$$op2[$i2]} && ($seen{$$op2[$i2]} eq $i1) );
 
          if ($$op1[$i1] eq $$op2[$i2]){
             CORE::push @$result, $$op1[$i1];

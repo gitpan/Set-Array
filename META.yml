@@ -1,6 +1,6 @@
 ---
 name: Set-Array
-version: 0.16
+version: 0.17
 author:
   - 'Ron Savage <ron@savage.net.au>'
 abstract: |-
@@ -18,7 +18,7 @@ build_requires:
 provides:
   Set::Array:
     file: lib/Set/Array.pm
-    version: 0.16
+    version: 0.17
 generated_by: Module::Build version 0.280801
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

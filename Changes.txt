@@ -1,5 +1,8 @@
 Revision history for Perl extension Set::Array.
 
+0.17  Fri Jul 25 09:40:00 2008
+	  - Patch sub intersection again to properly handle 0 as a member of a set
+
 0.16  Fri Jul 25 09:28:00 2008
 	  - Arrrrgggggghhhhh. Patch t/test.t, to change the version number
 

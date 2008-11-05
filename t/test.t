@@ -3,7 +3,9 @@
 # `make test'. After `make install' it should work as `perl test.pl'
 ##########################################################################
 
-use Test::More tests => 40;
+use Test::More tests => 45;
+use Test::Deep;
+
 BEGIN{ use_ok('Set::Array') }
 
 my $s1 = Set::Array->new(qw(fname dan lname berger));
@@ -20,12 +22,21 @@ my $flat  = Set::Array->new([1,2,3],['a','b','c']);
 my $fe    = Set::Array->new(1,2,3,4,5);
 
 # VERSION check
-ok("$Set::Array::VERSION" == 0.17);
+ok("$Set::Array::VERSION" == 0.18);
 
 # as_hash() tests
 ok(%hash = $s5->as_hash());         # base method
 ok(%hash = $s5->to_hash());         # alias
 ok(ref($s5->as_hash()) eq "HASH");  # return type
+
+my(%reverse) = $s5 -> reverse();
+my(%odd_1)   = $s5 -> as_hash('odd');
+my(%odd_2)   = $s5 -> as_hash({key_option => 'odd'});
+my(%odd_3)   = $s5 -> as_hash( (key_option => 'odd') );
+
+cmp_deeply(\%reverse, \%odd_1, "as_hash('odd')");
+cmp_deeply(\%reverse, \%odd_2, "as_hash({key_option => 'odd'})");
+cmp_deeply(\%reverse, \%odd_3, "as_hash( (key_option => 'odd') )");
 
 # at() tests
 ok($s1->at(0) eq "fname");          # zero index
@@ -76,6 +87,21 @@ ok($s5->exists("alph") == 0);                # should not exist
 # fill() tests
 ok($empty->fill("foo"));                     # base method
 ok(eq_array($empty,["foo","foo","foo"]));    # fill
+
+my(@fill_1) = (qw/zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen/);
+my(@fill_2) = (qw/zero one two three four five six seven eight nine ten eleven twelve thirteen Elephant Elephant/);
+my(@fill_3) = (qw/ten eleven twelve/);
+
+my($s8)     = Set::Array -> new(@fill_1);
+my($s9)     = Set::Array -> new(@fill_2);
+my($s10)    = Set::Array -> new(@fill_3);
+my($fill_1) = $s8 -> fill('Elephant', '14..15') -> join(', ') -> print();
+my($fill_2) = $s9 -> join(', ') -> print();
+my($fill_3) = $s8 -> indices('10..12') -> join(', ') -> print();
+my($fill_4) = $s10 -> join(', ') -> print();
+
+ok($fill_1 eq $fill_2, "fill('14..15') works");
+ok($fill_3 eq $fill_4, "indices('10..12') works");
 
 # first() tests
 ok($s5->first eq "alpha");

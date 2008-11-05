@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.17';
+   $VERSION = '0.18';
 }
 
 sub new{
@@ -38,21 +38,39 @@ sub new{
 
 # Turn array into a hash
 sub as_hash{
-   my($self,%arg) = @_;
+   my($self,$order,@arg) = @_;
 
-   $arg{key_order} = 'even' unless $arg{key_order};
+   if (! defined $order) {
+      $order = 'even';
+   }
+   elsif (ref $order eq 'HASH') {
+      $order = $$order{'key_option'};
+   }
+   elsif ($order eq 'key_option') {
+      $order = $arg[0];
+   }
 
-   if( (scalar(@$self) % 2) != 0 ){
-      Carp::croak "Odd number of elements in 'as_hash()' call";
+   $order = lc $order;
+
+   if ($order =~ /^(?:odd|even)$/) {
    }
-   else{
-      my %hash;
-      if($arg{key_order} eq 'odd'){ %hash = CORE::reverse(@$self) }
-      else{ %hash = @$self }
-      if(want('OBJECT')){ return $self } # This shouldn't happen
-      return %hash if wantarray;
-      return \%hash;
+   else {
+      Carp::croak "Unrecognized option ($order) passed to 'as_hash()' method";
    }
+
+   my %hash;
+
+   if($order eq 'odd') {
+      %hash = CORE::reverse(@$self);
+   }
+   else {
+      %hash = @$self;
+   }
+
+   if(want('OBJECT')){ return $self } # This shouldn't happen
+
+   return %hash if wantarray;
+   return \%hash;
 }
 *to_hash = \&as_hash;
 
@@ -198,7 +216,7 @@ sub fill{
    if($length){ $length += $start }
    else{ $length = $#$self + 1}
 
-   if($start =~ /^(\d)\.\.(\d)$/){
+   if($start =~ /^(\d+)\.\.(\d+)$/){
       CORE::foreach($1..$2){ @{$self}[$_] = $val }
       return $self;
    }
@@ -333,7 +351,7 @@ sub indices{
    }
 
    CORE::foreach(@indices){
-      if($_ =~ /(\d)\.\.(\d)/){ for($1..$2){
+      if($_ =~ /(\d+)\.\.(\d+)/){ for($1..$2){
          CORE::push(@iArray,@{$self}[$_]) };
          next;
       }
@@ -381,20 +399,20 @@ sub set{
    if(defined wantarray){ return \@copy }
 }
 
-# Joins the contents of the list with the specified character
+# Joins the contents of the list with the specified string
 sub join{
-   my($self,$char) = @_;
+   my($self,$s) = @_;
 
-   $char = ',' unless $char;
+   $s = ',' unless $s;
 
    my $string;
 
    if(want('OBJECT')){
-      $string = CORE::join($char,@$self);
+      $string = CORE::join($s,@$self);
       return bless \$string;
    }
 
-   $string = CORE::join($char,@$self);
+   $string = CORE::join($s,@$self);
    return $string;
 }
 
@@ -893,7 +911,6 @@ should (hopefully) improve code readability and/or maintainability.  The
 other advantage to this module is method-chaining by which any number of
 methods may be called on a single object in a single statement.
 
-
 =head1 OBJECT BEHAVIOR
 
 The exact behavior of the methods depends largely on the calling context.
@@ -938,111 +955,176 @@ B<Here are the exceptions>:
 
 =head1 BOOLEAN METHODS
 
-B<exists(>I<val>B<)> - Returns 1 if I<val> exists within the array,
-0 otherwise.  If no value (or I<undef>) is passed, then this
-method will test for the existence of undefined values within the array.
+In the following sections, the brackets in [val] indicate that val is a I<optional> parameter.
 
-B<is_empty()> - Returns 1 if the array is empty, 0 otherwise.  Empty is
+=over 4
+
+=item exists([val])
+
+Returns 1 if I<val> exists within the array, 0 otherwise.
+
+If no value (or I<undef>) is passed, then this method will test for the existence of undefined values within the array.
+
+=item is_empty()
+
+Returns 1 if the array is empty, 0 otherwise.  Empty is
 defined as having a length of 0.
+
+=back
 
 =head1 STANDARD METHODS
 
-B<at(>I<index>B<)> - Returns the item at the given index (or
-I<undef>). A negative index may be used to count from the end of the array.
+=over 4
+
+=item at(index)
+
+Returns the item at the given index (or I<undef>).
+
+A negative index may be used to count from the end of the array.
+
 If no value (or I<undef>) is specified, it will look for the first item
 that is not defined.
 
-B<clear()> - Empties the array (i.e. length becomes 0).  You may
-pass a '1' to this method to set each element of the array to I<undef> rather
+=item clear([1])
+
+Empties the array (i.e. length becomes 0).
+
+You may pass a I<1> to this method to set each element of the array to I<undef> rather
 than truly empty it.
 
-B<compact()> - Removes undefined elements from the array.
+=item compact()
 
-B<count(>I<?val?>B<)> - Returns the number of instances of I<val>
-within the array.  If I<val> is not specified (or is I<undef>), the
-method will return the number of undefined values within the array.
+Removes undefined elements from the array.
 
-B<delete(>I<list>B<)> - Deletes all items within I<list> from the array
-that match.  This method will crash if I<list> is not defined.  If your goal
-is to delete undefined values from your object, use the I<compact()>
-method instead.
+=item count([val])
 
-B<delete_at(>I<index, ?index?>B<)> - Deletes the item at the
-specified index. If a second index is specified, a range of items is deleted.
+Returns the number of instances of I<val> within the array.
+
+If I<val> is not specified (or is I<undef>), the method will return the number of undefined values within the array.
+
+=item delete(list)
+
+Deletes all items within I<list> from the array that match.
+
+This method will crash if I<list> is not defined.
+
+If your goal is to delete undefined values from your object, use the I<compact()> method instead.
+
+=item delete_at(index, [index])
+
+Deletes the item at the specified index.
+
+If a second index is specified, a range of items is deleted.
+
 You may use -1 or the string 'end' to refer to the last element of the array.
 
-B<duplicates> - Returns a list of N-1 elements for each element N in the
-set.  For example, if you have set "X X Y Y Y", this method would return
-a the list "X Y Y".
+=item duplicates()
 
-B<fill(>I<val,?start?,?length?>B<)> - Sets the selected elements of
-the array (which may be the entire array) to I<val>.  The default value for
-start is 0. If length is not specified the entire array, however long it may
-be at the time of the call, will be filled. Alternatively, a quoted integer
-range may be used.
+Returns a list of N-1 elements for each element N in the set.
 
-e.g. C<< $sao->fill('x','3-5'); >>
+For example, if you have set "X X Y Y Y", this method would return the list "X Y Y".
+
+=item fill(val, [start], [length])
+
+Sets the selected elements of the array (which may be the entire array) to I<val>.
+
+The default value for I<start> is 0.
+
+If length is not specified the entire array, however long it may be, will be filled.
+
+A range may also be used for the I<start> parameter. A range must be a quoted string in '0..999' format.
+
+E.g. C<< $sao->fill('x', '3..65535'); >>
 
 The array length/size may not be expanded with this call - it is only meant to
 fill in already-existing elements.
 
-B<first()> - Returns the first element of the array (or undef).
+=item first()
 
-B<flatten()> - Causes a one-dimensional flattening of the array,
-recursively. That is, for every element that is an array (or hash, or
-a ref to either an array or hash), extract its elements into the array.
+Returns the first element of the array (or undef).
 
-e.g. C<< my $sa = Set::Array-E<gt>new([1,3,2],{one=>'a',two=>'b'},x,y,z); >>
+=item flatten()
+
+Causes a one-dimensional flattening of the array, recursively.
+
+That is, for every element that is an array (or hash, or a ref to either an array or hash),
+extract its elements into the array.
+
+E.g. C<< my $sa = Set::Array-E<gt>new([1,3,2],{one=>'a',two=>'b'},x,y,z); >>
 
 C<< $sao-E<gt>flatten->join(',')->print; # prints "1,3,2,one,a,two,b,x,y,z" >>
 
-B<foreach(>I<sub ref>B<)> - Iterates over an array, executing
-the subroutine for each element in the array.  If you wish to modify or
-otherwise act directly on the contents of the array, use B<$_> within
+=item foreach(sub ref)
+
+Iterates over an array, executing the subroutine for each element in the array.
+
+If you wish to modify or otherwise act directly on the contents of the array, use B<$_> within
 your sub reference.
 
-e.g. To increment all elements in the array by one...
+E.g. To increment all elements in the array by one...
 
 C<< $sao-E<gt>foreach(sub{ ++$_ }); >>
 
-B<get> - Alias for the B<indices()> method.
+=item get()
 
-B<index(>I<val>B<)> - Returns the index of the first element of the array
-object that contains I<val>.  Returns I<undef> if no value is found.
+This is an alias for the B<indices()> method.
+
+=item index(val)
+
+Returns the index of the first element of the array object that contains I<val>.
+
+Returns I<undef> if no value is found.
 
 Note that there is no dereferencing here so if you're looking for an item
 nested within a ref, use the I<flatten> method first.
 
-B<indices(>I<val1,?val2?, ?val...?>B<)> - Returns an array
-consisting of the elements at the specified indices or I<undef> if the element
+=item indices(val1, [val2], [valN])
+
+Returns an array consisting of the elements at the specified indices, or I<undef> if the element
 is out of range.
 
-A range may also be used.  It must be a quoted string in '0..3' format.
+A range may also be used for each of the <valN> parameters. A range must be a quoted string in '0..999' format.
 
-B<join(>I<?char?>B<)> - Joins the individual elements of the list into
-a single string with the elements separated by the value of I<char>.  Useful
-in conjunction with the I<print()> method.  If no character is specified,
-then I<char> defaults to a comma.
+=item join([string])
+
+Joins the elements of the list into a single string with the elements separated by the value of I<string>.
+
+Useful in conjunction with the I<print()> method.
+
+If no string is specified, then I<string> defaults to a comma.
 
 e.g. C<< $sao-E<gt>join('-')-E<gt>print; >>
 
-B<last()> - Returns the last element of the array (or I<undef>).
+=item last()
 
-B<length()> - Returns the number of elements within the array.
+Returns the last element of the array (or I<undef>).
 
-B<max()> - Returns the maximum value of an array.  No effort is
-made to check for non-numeric data.
+=item length()
 
-B<pack(>I<template>B<)> - Packs the contents of the array into a
-string (in scalar context) or a single array element (in object
+Returns the number of elements within the array.
+
+=item max()
+
+Returns the maximum value of an array.
+
+No effort is made to check for non-numeric data.
+
+=item pack(template)
+
+Packs the contents of the array into a string (in scalar context) or a single array element (in object
 or void context).
 
-B<pop()> - Removes the last element from the array.  Returns the
-popped element.
+=item pop()
 
-B<print(>I<?1?>B<)> - Prints the contents of the array. If a '1'
-is provided as an argument, the output will automatically be terminated
-with a newline.
+Removes the last element from the array.
+
+Returns the popped element.
+
+=item print([1])
+
+Prints the contents of the array.
+
+If a I<1> is provided as an argument, the output will automatically be terminated with a newline.
 
 This also doubles as a 'contents' method, if you just want to make a copy
 of the array, e.g. my @copy = $sao-E<gt>print;
@@ -1052,25 +1134,35 @@ Can be called in void or list context, e.g.
 C<< $sao->print(); # or... >>
 C<< print "Contents of array are: ", $sao->print(); >>
 
-B<push(>I<list>B<)> - Adds I<list> to the end of the array, where
-I<list> is either a scalar value or a list.  Returns an array or array
-reference in list or scalar context, respectively.  Note that it does
-B<not> return the length in scalar context.  Use the I<length> method for that.
+=item push(list)
 
-B<reverse()> - Reverses the order of the contents of the array.
+Adds I<list> to the end of the array, where I<list> is either a scalar value or a list.
 
-B<rindex(>I<val>B<)> - Similar to the 'index()' method, except that it
-returns the index of the last I<val> found within the array.
+Returns an array or array reference in list or scalar context, respectively.
 
-B<set(>I<index>,I<value>B<)> - Sets the element at I<index> to I<value>,
-replacing whatever may have already been there.
+Note that it does B<not> return the length in scalar context. Use the I<length> method for that.
 
-B<shift()> - Shifts the first element of the array and returns
-the shifted element.
+=item reverse()
 
-B<sort(>I<?coderef?>B<)> - Sorts the contents of the array in alphabetical
-order, or in the order specified by the optional I<coderef>.  Use your
-standard I<$a> and I<$b> variables within your calling program, e.g:
+Reverses the order of the contents of the array.
+
+=item rindex(val)
+
+Similar to the I<index()> method, except that it returns the index of the last I<val> found within the array.
+
+=item set(index, value)
+
+Sets the element at I<index> to I<value>, replacing whatever may have already been there.
+
+=item shift()
+
+Shifts off the first element of the array and returns the shifted element.
+
+=item sort([coderef])
+
+Sorts the contents of the array in alphabetical order, or in the order specified by the optional I<coderef>.
+
+Use your standard I<$a> and I<$b> variables within your sort sub, e.g:
 
 C<< my $sao = Set::Array->new(
    { name => 'Berger', salary => 20000 },
@@ -1082,51 +1174,106 @@ C<< my $subref = sub{ $b->{name} cmp $a->{name} || $b->{salary} <=> $a->{salary}
 
 C<< $sao14->sort($subref)->flatten->join->print(1); >>
 
-B<splice(>I<?offset?,?length?,?list?>B<)> - Splice the array starting
-at position I<offset> up to I<length> elements, and replace them with I<list>.
-If no list is provided, all elements are deleted.  If length is omitted,
-everything from I<offset> onward is removed.
+=item splice([offset], [length], [list])
 
-Returns an array or array ref in list or scalar context, respectively.  This
-method B<always> modifies the object, regardless of context.  If your goal was
-to grab a range of values without modifying the object, use the I<indices>
-method instead.
+Splice the array starting at position I<offset> up to I<length> elements, and replace them with I<list>.
 
-B<unique()> - Removes/returns non-unique elements from the list.
+If no list is provided, all elements are deleted.
 
-B<unshift(>I<list>B<)> - Prepends a scalar or list to array.  Note that
-this method returns an array or array reference in list or scalar context,
-respectively.  It does B<not> return the length of the array in scalar context.
-Use the I<length> method for that.
+If length is omitted, everything from I<offset> onward is removed.
+
+Returns an array or array ref in list or scalar context, respectively.
+
+This method B<always> modifies the object, regardless of context.
+
+If your goal was to grab a range of values without modifying the object, use the I<indices> method instead.
+
+=item unique()
+
+Removes/returns non-unique elements from the list.
+
+=item unshift(list)
+
+Prepends a scalar or list to array.
+
+Note that this method returns an array or array reference in list or scalar context, respectively.
+
+It does B<not> return the length of the array in scalar context. Use the I<length> method for that.
+
+=back
 
 =head1 ODDBALL METHODS
 
-B<as_hash()> - Returns a hash based on the current array, with each
+=over 4
+
+=item as_hash([$option])
+
+Returns a hash based on the current array, with each
 even numbered element (including 0) serving as the key, and each odd element
-serving as the value.  This can be switched by using the I<key_order> option
-and setting it to 'odd', in which case the even values serve as the values,
-and the odd elements serve as the keys. The default is I<even>.
+serving as the value.
+
+This can be switched by using $option, and setting it to I<odd>,
+in which case the even values serve as the values, and the odd elements serve as the keys.
+
+The default value of $option is I<even>.
 
 Of course, if you don't care about insertion order, you could just as well
-do something like, C<$sao->reverse->as_hash;>
+do something like, C<< $sao->reverse->as_hash; >>
 
-Carp::croak's if the array contains an odd number of elements.  This method does
-not actually modify the object itself in any way.  It just returns a plain
-hash in list context or a hash reference in scalar context.  The reference
+This method does not actually modify the object itself in any way. It just returns a plain
+hash in list context or a hash reference in scalar context. The reference
 is not blessed, therefore if this method is called as part of a chain, it
 must be the last method called.
 
-B<impose(>I<?append/prepend?>,I<string>B<)> - Appends or prepends the
-specified string to each element in the array.  Specify the method by
-using either the keyword 'append' or 'prepend'.  The default is 'append'.
+I<$option> can be specified in various ways:
 
-B<randomize()> - Randomizes the order of the elements within the
-array.
+=over 4
 
-B<rotate(>I<direction>B<)> - Moves the last item of the list to the
-front and shifts all other elements one to the right, or vice-versa, depending
-on what you pass as the direction - 'ftol' (first to last) or 'ltof' (last to
-first).  The default is 'ltof'.
+=item undef
+
+When you do not supply a value for this parameter, the default is I<even>.
+
+=item 'odd' or 'even'
+
+The value may be a string.
+
+This possibility was added in V 0.18.
+
+This is now the recommended alternative.
+
+=item {key_option => 'odd'} or {key_option => 'even'}
+
+The value may be a hash ref, with 'key_option' as the hash key.
+
+This possibility was added in V 0.18.
+
+=item (key_option => 'odd') or (key_option => 'even')
+
+The value may be a hash, with 'key_option' as the hash key.
+
+This was the original (badly-documented) alternative to undef, and it still supported in order to
+make the code backwards-compatible.
+
+=back
+
+=item impose([append/prepend], string)
+
+Appends or prepends the specified string to each element in the array.
+
+Specify the method with either 'append' or 'prepend'.
+
+The default is 'append'.
+
+=item randomize()
+
+Randomizes the order of the elements within the array.
+
+=item rotate(direction)
+
+Moves the last item of the list to the front and shifts all other elements one to the right, or vice-versa,
+depending on what you pass as the direction - 'ftol' (first to last) or 'ltof' (last to first).
+
+The default is 'ltof'.
 
 e.g.
 my $sao = Set::Array-E<gt>new(1,2,3);
@@ -1134,6 +1281,12 @@ my $sao = Set::Array-E<gt>new(1,2,3);
 $sao->rotate(); # order is now 3,1,2
 
 $sao->rotate('ftol'); # order is back to 1,2,3
+
+=item to_hash()
+
+This is an alias for I<as_hash()>.
+
+=back
 
 =head1 OVERLOADED (COMPARISON) OPERATORS
 
@@ -1179,7 +1332,7 @@ order is ignored.
 
 B<*> or B<intersection> - Returns all elements that are common to both sets.
 
-B<%> or B<symmetric_difference> - Returns all elements that are in one set
+B<%> or B<symmetric_difference> or B<symm_diff> - Returns all elements that are in one set
 or the other, but not both.  Opposite of intersection.
 
 B<+> or B<union> - Returns the union of both sets.  Duplicates excluded.

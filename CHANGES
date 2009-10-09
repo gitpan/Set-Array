@@ -1,5 +1,12 @@
 Revision history for Perl extension Set::Array.
 
+0.19  Fri Oct  9 15:19:00 2009
+	  - Patch sub intersection() to assign the result to the object, before returning.
+	  	This means that in situ updates of the object now work.
+		Many thanx to Helmut of hzlabs (de) for reporting this problem.
+	  - Add 3 new tests (44 .. 46) to protect against regressions.
+	  - Rename Changes.txt to CHANGES.
+
 0.18  Wed Nov  5 09:45:00 2008
 	  - Patch sub indices() to accept more than 1 digit at each end of the range.
 	  	Hence not just '0..9', but now '0..99', '0..99999', etc are all supported.

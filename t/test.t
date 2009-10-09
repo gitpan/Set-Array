@@ -3,7 +3,7 @@
 # `make test'. After `make install' it should work as `perl test.pl'
 ##########################################################################
 
-use Test::More tests => 45;
+use Test::More tests => 46;
 use Test::Deep;
 
 BEGIN{ use_ok('Set::Array') }
@@ -22,7 +22,7 @@ my $flat  = Set::Array->new([1,2,3],['a','b','c']);
 my $fe    = Set::Array->new(1,2,3,4,5);
 
 # VERSION check
-ok("$Set::Array::VERSION" == 0.18);
+ok("$Set::Array::VERSION" == 0.19, 'Version check checked out');
 
 # as_hash() tests
 ok(%hash = $s5->as_hash());         # base method
@@ -147,11 +147,35 @@ ok($fe->foreach(sub{ $_++ }));
 my($s6) = Set::Array -> new(0, 2, 4, 6);	# Test handling of 0.
 my($s7) = Set::Array -> new(0, 3, 6, 9);
 
-ok(is_deeply([$s6 -> intersection($s7)], [0, 6]) );
+is_deeply([$s6 -> intersection($s7)], [0, 6], 'Intersection with zeros works' );
 
 # Test intersection patch in V 0.15.
 
-$s6 = Set::Array -> new(0, 2, 4, 6, 0, 6);
-$s7 = Set::Array -> new(0, 3, 6, 9, 0, 6);
+my($s11) = Set::Array -> new(0, 2, 4, 6, 0, 6);
+my($s12) = Set::Array -> new(0, 3, 6, 9, 0, 6);
 
-ok(eq_array([$s6 -> intersection($s7)], [0, 6, 0, 6]) );
+eq_array([$s11 -> intersection($s12)], [0, 6, 0, 6], 'Intersection with repetition works');
+
+# Test intersection patch in V 0.19. Next 3 tests...
+
+my($s13) = Set::Array -> new(1, 2, 3, 4, 5);
+my($s14) = Set::Array -> new(4, 5, 6);
+
+# wantarray:
+@c  = $s13->intersection ($s14);
+
+is_deeply(\@c, [4, 5], 'Intersection and wantarray works' );
+
+# ! wantarray and ! want object:
+
+$d = $s13->intersection ($s14);
+
+is_deeply($d, [4, 5], 'Intersection and ! wantarray works' );
+
+# want object (i.e. in situ update):
+
+$s13->intersection ($s14);
+
+my $s15 = $s13 -> join(', ') -> print();
+
+ok($s15 eq '4, 5', 'Intersection and want object works' );

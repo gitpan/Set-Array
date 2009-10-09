@@ -27,7 +27,7 @@ use overload
 
 BEGIN{
    use vars qw($VERSION);
-   $VERSION = '0.18';
+   $VERSION = '0.19';
 }
 
 sub new{
@@ -785,9 +785,9 @@ sub intersection{
    }
 
    if(want('OBJECT') || !(defined wantarray)){
-      return $result;
+      @$op1 = @$result;
+      return $op1;
    }
-
    if(wantarray){ return @$result }
    if(defined wantarray){ return $result }
 }
@@ -1432,7 +1432,7 @@ Original author: Daniel Berger
 djberg96 at hotmail dot com
 imperator on IRC (freenode)
 
-Maintainer since V 0.12: Ron Savage <ron@savage.net.au>
+Maintainer since V 0.12: Ron Savage I<E<lt>ron@savage.net.auE<gt>>.
 
 Home page: http://savage.net.au/index.html
 

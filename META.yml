@@ -1,6 +1,6 @@
 ---
 name: Set-Array
-version: 0.18
+version: 0.19
 author:
   - 'Ron Savage <ron@savage.net.au>'
 abstract: |-
@@ -9,18 +9,20 @@ abstract: |-
 license: artistic
 resources:
   license: http://opensource.org/licenses/artistic-license.php
-requires:
-  Carp: 0
-  Want: 0
 build_requires:
   Test::Deep: 0
   Test::More: 0
   Test::Pod: 0
+requires:
+  Carp: 0
+  Want: 0
+configure_requires:
+  Module::Build: 0.35
 provides:
   Set::Array:
     file: lib/Set/Array.pm
-    version: 0.18
-generated_by: Module::Build version 0.280801
+    version: 0.19
+generated_by: Module::Build version 0.35
 meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.2.html
-  version: 1.2
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4

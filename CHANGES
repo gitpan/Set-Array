@@ -1,11 +1,12 @@
 Revision history for Perl extension Set::Array.
 
-0.19  Fri Oct  9 15:19:00 2009
-	  - Patch sub intersection() to assign the result to the object, before returning.
-	  	This means that in situ updates of the object now work.
-		Many thanx to Helmut of hzlabs (de) for reporting this problem.
-	  - Add 3 new tests (44 .. 46) to protect against regressions.
-	  - Rename Changes.txt to CHANGES.
+0.20  Wed Feb 10 13:53:02 2010
+	- Add META.yml. Update MANIFEST.SKIP. Add MANIFEST and MYMETA.yml.
+	- Change version # is t/test.t.
+
+0.19  Fri Nov 13 13:20:00 2009
+	- Run dos2unix
+	- Rename Changes.txt to CHANGES
 
 0.18  Wed Nov  5 09:45:00 2008
 	  - Patch sub indices() to accept more than 1 digit at each end of the range.

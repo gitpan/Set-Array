@@ -25,10 +25,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-BEGIN{
-   use vars qw($VERSION);
-   $VERSION = '0.19';
-}
+our $VERSION = '0.20';
 
 sub new{
    my($class,@array) = @_;
@@ -785,9 +782,9 @@ sub intersection{
    }
 
    if(want('OBJECT') || !(defined wantarray)){
-      @$op1 = @$result;
-      return $op1;
+      return $result;
    }
+
    if(wantarray){ return @$result }
    if(defined wantarray){ return $result }
 }
@@ -1432,7 +1429,7 @@ Original author: Daniel Berger
 djberg96 at hotmail dot com
 imperator on IRC (freenode)
 
-Maintainer since V 0.12: Ron Savage I<E<lt>ron@savage.net.auE<gt>>.
+Maintainer since V 0.12: Ron Savage I<E<lt>ron@savage.net.auE<gt>> (in 2005).
 
 Home page: http://savage.net.au/index.html
 

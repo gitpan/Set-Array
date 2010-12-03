@@ -25,7 +25,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 sub new{
    my($class,@array) = @_;
@@ -120,6 +120,20 @@ sub count{
    $hits = grep /^$val$/, @$self;
    if(want('OBJECT')){ return bless \$hits }
    return $hits;
+}
+
+# Pops and returns /the object/. I.e it can be chained.
+sub cpop{
+   my($self) = @_;
+   my $popped = CORE::pop(@$self);
+   return $self;
+}
+
+# Shifts and returns /the object/. I.e it can be chained.
+sub cshift{
+   my($self) = @_;
+   my $shifted = CORE::shift @$self;
+   return $self;
 }
 
 # Delete all instances of the specified value within the array
@@ -422,7 +436,7 @@ sub last{
 
 # Returns the number of elements within the array
 sub length{
-   my($self) = @_ ;
+   my($self) = @_;
    my $length = scalar(@$self);
    if(want('OBJECT')){ return bless \$length }
    return $length;
@@ -469,19 +483,18 @@ sub print{
    if(reftype($self) eq 'ARRAY'){
       if(wantarray){ return @$self }
       if(defined wantarray){ return \@{$self} }
-      print @$self;
-      if($nl){ print "\n" }
+      CORE::print @$self;
+      if($nl){ CORE::print "\n" }
    }
    elsif(reftype($self) eq 'SCALAR'){
       if(defined wantarray){ return $$self }
-      print $$self;
-      if($nl){ print "\n" }
+      CORE::print $$self;
+      if($nl){ CORE::print "\n" }
    }
    else{
-      print @$self;
-      if($nl){ print "\n" }
+      CORE::print @$self;
+      if($nl){ CORE::print "\n" }
    }
-
    return $self;
 }
 
@@ -947,6 +960,10 @@ B<Here are the exceptions>:
   really want the first or last value without modifying the object, you
   can always use the I<first()> or I<last()> method, respectively.
 
+* The methods I<cshift()> and I<cpop()> (for chainable-shift and chainable-pop)
+  will modify the object B<and return the object>. I.e. the value shifted or popped
+  is discarded. See the docs below or the code at the end of t/test.t for examples.
+
 * The I<join()> method always returns a string and is really meant for use
   in conjunction with the I<print()> method.
 
@@ -998,6 +1015,34 @@ Removes undefined elements from the array.
 Returns the number of instances of I<val> within the array.
 
 If I<val> is not specified (or is I<undef>), the method will return the number of undefined values within the array.
+
+=item cpop()
+
+The 'c' stands for 'chainable' pop.
+
+Removes I<and discards> the last element of the array.
+
+Returns I<the object>.
+
+	Set::Array -> new(1, 2, 3, 4, 5) -> cpop -> join -> print;
+
+prints 1,2,3,4.
+
+See also cshift(), pop() and shift().
+
+=item cshift()
+
+The 'c' stands for 'chainable' shift.
+
+Removes I<and discards> the first element of the array.
+
+Returns I<the object>.
+
+	Set::Array -> new(1, 2, 3, 4, 5) -> cshift -> join -> print;
+
+prints 2,3,4,5.
+
+See also cpop(), pop() and shift().
 
 =item delete(list)
 
@@ -1117,6 +1162,8 @@ Removes the last element from the array.
 
 Returns the popped element.
 
+See also cpop(), cshift() and shift().
+
 =item print([1])
 
 Prints the contents of the array.
@@ -1154,6 +1201,8 @@ Sets the element at I<index> to I<value>, replacing whatever may have already be
 =item shift()
 
 Shifts off the first element of the array and returns the shifted element.
+
+See also cpop(), cshift() and pop().
 
 =item sort([coderef])
 

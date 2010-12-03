@@ -1,5 +1,10 @@
 Revision history for Perl extension Set::Array.
 
+0.21  Fri Dec  3 11:26:00 2010
+	- Implement, document and test cpop() and cshift(), as suggested by Jerrad Pierce. See RT#63543.
+	- Patch print() to call CORE::print explicitly.
+	- Remove version check test from t/test.t.
+
 0.20  Wed Feb 10 13:53:02 2010
 	- Add META.yml. Update MANIFEST.SKIP. Add MANIFEST and MYMETA.yml.
 	- Change version # is t/test.t.

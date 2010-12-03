@@ -21,9 +21,6 @@ my $empty = Set::Array->new(undef, undef, undef);
 my $flat  = Set::Array->new([1,2,3],['a','b','c']);
 my $fe    = Set::Array->new(1,2,3,4,5);
 
-# VERSION check
-ok("$Set::Array::VERSION" == 0.20);
-
 # as_hash() tests
 ok(%hash = $s5->as_hash());         # base method
 ok(%hash = $s5->to_hash());         # alias
@@ -155,3 +152,16 @@ $s6 = Set::Array -> new(0, 2, 4, 6, 0, 6);
 $s7 = Set::Array -> new(0, 3, 6, 9, 0, 6);
 
 ok(eq_array([$s6 -> intersection($s7)], [0, 6, 0, 6]) );
+
+# Test cpop and cshift.
+# Get: zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen.
+
+$s8 = Set::Array -> new(@fill_1);
+
+# Zap: zero one two three.
+# Zap: twelve thirteen fourteen fifteen (in reverse order).
+# Get: four .. eleven.
+
+$s8 -> cshift -> cshift -> cshift -> cshift -> cpop -> cpop -> cpop -> cpop;
+
+ok($s8 -> join('.') -> print eq 'four.five.six.seven.eight.nine.ten.eleven', 'cpop & cshift ok');

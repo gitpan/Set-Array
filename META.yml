@@ -17,10 +17,10 @@ name: Set-Array
 provides:
   Set::Array:
     file: lib/Set/Array.pm
-    version: 0.20
+    version: 0.21
 requires:
   Carp: 0
   Want: 0
 resources:
   license: http://www.perlfoundation.org/artistic_license_1_0
-version: 0.20
+version: 0.21

@@ -3,7 +3,7 @@
 # `make test'. After `make install' it should work as `perl test.pl'
 ##########################################################################
 
-use Test::More tests => 45;
+use Test::More tests => 52;
 use Test::Deep;
 
 BEGIN{ use_ok('Set::Array') }
@@ -146,14 +146,14 @@ my($s7) = Set::Array -> new(0, 3, 6, 9);
 
 ok(is_deeply([$s6 -> intersection($s7)], [0, 6]) );
 
-# Test intersection patch in V 0.15.
+# Test intersection() patch in V 0.15.
 
 $s6 = Set::Array -> new(0, 2, 4, 6, 0, 6);
 $s7 = Set::Array -> new(0, 3, 6, 9, 0, 6);
 
 ok(eq_array([$s6 -> intersection($s7)], [0, 6, 0, 6]) );
 
-# Test cpop and cshift.
+# Test cpop() and cshift().
 # Get: zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen.
 
 $s8 = Set::Array -> new(@fill_1);
@@ -165,3 +165,33 @@ $s8 = Set::Array -> new(@fill_1);
 $s8 -> cshift -> cshift -> cshift -> cshift -> cpop -> cpop -> cpop -> cpop;
 
 ok($s8 -> join('.') -> print eq 'four.five.six.seven.eight.nine.ten.eleven', 'cpop & cshift ok');
+
+# Test unique():
+# o Scalar context.
+# o List context.
+# o Chained context.
+
+$s6 = Set::Array -> new(1, 2, 2, 3, 3, 3);
+
+ok($s6 -> length == 6, 'Original element count before unique()');
+
+# Scalar context.
+
+$s7  = $s6 -> unique;
+
+cmp_deeply([sort @$s7], [1, 2, 3], 'unique() in scalar context');
+ok($s6 -> length == 6, 'Original element count unchanged by unique() in scalar context');
+
+# List context.
+
+my(@s7) = $s6 -> unique;
+
+cmp_deeply([sort @s7], [1, 2, 3], 'unique() in list context');
+ok($s6 -> length == 6, 'Original element count unchanged by unique() in list context');
+
+# Chained context.
+
+$s8 = $s6 -> unique -> length;
+
+cmp_deeply([sort @$s6], [1, 2, 3], 'unique() in chained context');
+ok($s6 -> length == 3, 'Original element count /changed/ by unique() in chained context');

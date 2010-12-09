@@ -1,5 +1,10 @@
 Revision history for Perl extension Set::Array.
 
+0.22  Thu Dec  9 19:58:00 2010
+	- Rewrite the docs for compact(), delete(), duplicates(), reverse(), sort() and unique(),
+		after email discussions with belg4mit. See RT#63543.
+	- Expand t/test.t with specific tests for unique() in scalar, list and chained context.
+
 0.21  Fri Dec  3 11:26:00 2010
 	- Implement, document and test cpop() and cshift(), as suggested by Jerrad Pierce. See RT#63543.
 	- Patch print() to call CORE::print explicitly.

@@ -25,7 +25,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 sub new{
    my($class,@array) = @_;
@@ -89,7 +89,8 @@ sub clear{
    if(defined wantarray){ return \@{$self} }
 }
 
-# Remove all undef elements
+# Remove all undef elements. It can be chained.
+
 sub compact{
    my($self) = @_;
 
@@ -123,6 +124,7 @@ sub count{
 }
 
 # Pops and returns /the object/. I.e it can be chained.
+
 sub cpop{
    my($self) = @_;
    my $popped = CORE::pop(@$self);
@@ -130,13 +132,15 @@ sub cpop{
 }
 
 # Shifts and returns /the object/. I.e it can be chained.
+
 sub cshift{
    my($self) = @_;
    my $shifted = CORE::shift @$self;
    return $self;
 }
 
-# Delete all instances of the specified value within the array
+# Delete all instances of the specified value within the array. It can be chained.
+
 sub delete{
    my($self,@vals) = @_;
 
@@ -150,7 +154,7 @@ sub delete{
 
    if(want('OBJECT')){ return $self }
    if(wantarray){ return @$self }
-   if(defined wantarray){ return \@{$self} }
+   if(defined wantarray){ return \@$self }
 }
 
 # Deletes an element at a specified index, or range of indices
@@ -175,25 +179,21 @@ sub delete_at{
    if(defined wantarray){ return \@{$self} }
 }
 
-# Returns a list of duplicate items in the array.
+# Returns a list of duplicate items in the array. It can be chained.
+
 sub duplicates{
    my($self) = @_;
 
    my(@dups,%count);
 
-   if(want('OBJECT') || !(defined wantarray)){
-      my %count;
-      CORE::foreach(@$self){
-         $count{$_}++;
-         CORE::push(@dups,$_) if $count{$_} > 1;
-      }
-      @$self = @dups;
-      return $self;
-   }
-
    CORE::foreach(@$self){
       $count{$_}++;
       if($count{$_} > 1){ CORE::push(@dups,$_) }
+   }
+
+   if(want('OBJECT') || !(defined wantarray)){
+      @$self = @dups;
+      return $self;
    }
 
    if(wantarray){ return @dups }
@@ -669,9 +669,10 @@ sub splice{
    if(defined wantarray){ return \@deleted }
 }
 
-# Returns a list of unique items in the array
+# Returns a list of unique items in the array. It can be chained.
+
 sub unique{
-   my($self,$nc) = @_;
+   my($self) = @_;
 
    my %item;
 
@@ -679,12 +680,10 @@ sub unique{
 
    if(want('OBJECT') || !(defined wantarray)){
       @$self = keys %item;
-      %item = ();
       return $self;
    }
 
    my @temp = keys %item;
-   %item = ();
 
    if(wantarray){ return @temp }
    if(defined wantarray){ return \@temp }
@@ -971,26 +970,20 @@ B<Here are the exceptions>:
 
 In the following sections, the brackets in [val] indicate that val is a I<optional> parameter.
 
-=over 4
-
-=item exists([val])
+=head2 exists([val])
 
 Returns 1 if I<val> exists within the array, 0 otherwise.
 
 If no value (or I<undef>) is passed, then this method will test for the existence of undefined values within the array.
 
-=item is_empty()
+=head2 is_empty()
 
 Returns 1 if the array is empty, 0 otherwise.  Empty is
 defined as having a length of 0.
 
-=back
-
 =head1 STANDARD METHODS
 
-=over 4
-
-=item at(index)
+=head2 at(index)
 
 Returns the item at the given index (or I<undef>).
 
@@ -999,24 +992,44 @@ A negative index may be used to count from the end of the array.
 If no value (or I<undef>) is specified, it will look for the first item
 that is not defined.
 
-=item clear([1])
+=head2 clear([1])
 
 Empties the array (i.e. length becomes 0).
 
 You may pass a I<1> to this method to set each element of the array to I<undef> rather
 than truly empty it.
 
-=item compact()
+=head2 compact()
 
-Removes undefined elements from the array.
+=over 4
 
-=item count([val])
+=item o In scalar context
+
+Returns an array ref of defined items.
+
+The object is not modified.
+
+=item o In list context
+
+Returns an array of defined items.
+
+The object is not modified.
+
+=item o In chained context
+
+Returns the object.
+
+The object I<is> modified if it contains undefined items.
+
+=back
+
+=head2 count([val])
 
 Returns the number of instances of I<val> within the array.
 
 If I<val> is not specified (or is I<undef>), the method will return the number of undefined values within the array.
 
-=item cpop()
+=head2 cpop()
 
 The 'c' stands for 'chainable' pop.
 
@@ -1030,7 +1043,7 @@ prints 1,2,3,4.
 
 See also cshift(), pop() and shift().
 
-=item cshift()
+=head2 cshift()
 
 The 'c' stands for 'chainable' shift.
 
@@ -1044,15 +1057,33 @@ prints 2,3,4,5.
 
 See also cpop(), pop() and shift().
 
-=item delete(list)
+=head2 delete(@list)
 
-Deletes all items within I<list> from the array that match.
+Deletes all items within the object that match I<@list>.
 
-This method will crash if I<list> is not defined.
+This method will die if I<@list> is not defined.
 
-If your goal is to delete undefined values from your object, use the I<compact()> method instead.
+If your goal is to delete undefined values from your object, use the L</compact()> method instead.
 
-=item delete_at(index, [index])
+This method always modifies the object, if elements in @list match elements in the object.
+
+=over 4
+
+=item o In scalar context
+
+Returns an array ref of unique items.
+
+=item o In list context
+
+Returns an array of unique items.
+
+=item o In chained context
+
+Returns the object.
+
+=back
+
+=head2 delete_at(index, [index])
 
 Deletes the item at the specified index.
 
@@ -1060,13 +1091,37 @@ If a second index is specified, a range of items is deleted.
 
 You may use -1 or the string 'end' to refer to the last element of the array.
 
-=item duplicates()
+=head2 duplicates()
 
-Returns a list of N-1 elements for each element N in the set.
+Returns a list of N-1 elements for each element which appears N times in the set.
 
 For example, if you have set "X X Y Y Y", this method would return the list "X Y Y".
 
-=item fill(val, [start], [length])
+If you want the output to be "X Y", see L</unique()>.
+
+=over 4
+
+=item o In scalar context
+
+Returns an array ref of duplicated items.
+
+The object is not modified.
+
+=item o In list context
+
+Returns an array of duplicated items.
+
+The object is not modified.
+
+=item o In chained context
+
+Returns the object.
+
+The object I<is> modified if it contains duplicated items.
+
+=back
+
+=head2 fill(val, [start], [length])
 
 Sets the selected elements of the array (which may be the entire array) to I<val>.
 
@@ -1081,11 +1136,11 @@ E.g. C<< $sao->fill('x', '3..65535'); >>
 The array length/size may not be expanded with this call - it is only meant to
 fill in already-existing elements.
 
-=item first()
+=head2 first()
 
 Returns the first element of the array (or undef).
 
-=item flatten()
+=head2 flatten()
 
 Causes a one-dimensional flattening of the array, recursively.
 
@@ -1096,7 +1151,7 @@ E.g. C<< my $sa = Set::Array-E<gt>new([1,3,2],{one=>'a',two=>'b'},x,y,z); >>
 
 C<< $sao-E<gt>flatten->join(',')->print; # prints "1,3,2,one,a,two,b,x,y,z" >>
 
-=item foreach(sub ref)
+=head2 foreach(sub ref)
 
 Iterates over an array, executing the subroutine for each element in the array.
 
@@ -1107,11 +1162,11 @@ E.g. To increment all elements in the array by one...
 
 C<< $sao-E<gt>foreach(sub{ ++$_ }); >>
 
-=item get()
+=head2 get()
 
 This is an alias for the B<indices()> method.
 
-=item index(val)
+=head2 index(val)
 
 Returns the index of the first element of the array object that contains I<val>.
 
@@ -1120,14 +1175,14 @@ Returns I<undef> if no value is found.
 Note that there is no dereferencing here so if you're looking for an item
 nested within a ref, use the I<flatten> method first.
 
-=item indices(val1, [val2], [valN])
+=head2 indices(val1, [val2], [valN])
 
 Returns an array consisting of the elements at the specified indices, or I<undef> if the element
 is out of range.
 
 A range may also be used for each of the <valN> parameters. A range must be a quoted string in '0..999' format.
 
-=item join([string])
+=head2 join([string])
 
 Joins the elements of the list into a single string with the elements separated by the value of I<string>.
 
@@ -1137,26 +1192,26 @@ If no string is specified, then I<string> defaults to a comma.
 
 e.g. C<< $sao-E<gt>join('-')-E<gt>print; >>
 
-=item last()
+=head2 last()
 
 Returns the last element of the array (or I<undef>).
 
-=item length()
+=head2 length()
 
 Returns the number of elements within the array.
 
-=item max()
+=head2 max()
 
 Returns the maximum value of an array.
 
 No effort is made to check for non-numeric data.
 
-=item pack(template)
+=head2 pack(template)
 
 Packs the contents of the array into a string (in scalar context) or a single array element (in object
 or void context).
 
-=item pop()
+=head2 pop()
 
 Removes the last element from the array.
 
@@ -1164,7 +1219,7 @@ Returns the popped element.
 
 See also cpop(), cshift() and shift().
 
-=item print([1])
+=head2 print([1])
 
 Prints the contents of the array.
 
@@ -1178,7 +1233,7 @@ Can be called in void or list context, e.g.
 C<< $sao->print(); # or... >>
 C<< print "Contents of array are: ", $sao->print(); >>
 
-=item push(list)
+=head2 push(list)
 
 Adds I<list> to the end of the array, where I<list> is either a scalar value or a list.
 
@@ -1186,41 +1241,101 @@ Returns an array or array reference in list or scalar context, respectively.
 
 Note that it does B<not> return the length in scalar context. Use the I<length> method for that.
 
-=item reverse()
+=head2 reverse()
 
-Reverses the order of the contents of the array.
+=over 4
 
-=item rindex(val)
+=item o In scalar context
+
+Returns an array ref of the object's items, reversed.
+
+The object is not modified.
+
+=item o In list context
+
+Returns an array of the object's items, reversed.
+
+The object is not modified.
+
+=item o In chained context
+
+Returns the object.
+
+The object I<is> modified, with its items being reversed.
+
+=back
+
+=head2 rindex(val)
 
 Similar to the I<index()> method, except that it returns the index of the last I<val> found within the array.
 
-=item set(index, value)
+=head2 set(index, value)
 
 Sets the element at I<index> to I<value>, replacing whatever may have already been there.
 
-=item shift()
+=head2 shift()
 
 Shifts off the first element of the array and returns the shifted element.
 
 See also cpop(), cshift() and pop().
 
-=item sort([coderef])
+=head2 sort([coderef])
 
 Sorts the contents of the array in alphabetical order, or in the order specified by the optional I<coderef>.
 
-Use your standard I<$a> and I<$b> variables within your sort sub, e.g:
+=over 4
 
-C<< my $sao = Set::Array->new(
-   { name => 'Berger', salary => 20000 },
-   { name => 'Berger', salary => 15000 },
-   { name => 'Vera', salary => 25000 },
-); >>
+=item o In scalar context
 
-C<< my $subref = sub{ $b->{name} cmp $a->{name} || $b->{salary} <=> $a->{salary} }; >>
+Returns an array ref of the object's items, sorted.
 
-C<< $sao14->sort($subref)->flatten->join->print(1); >>
+The object is not modified.
 
-=item splice([offset], [length], [list])
+=item o In list context
+
+Returns an array of the object's items, sorted.
+
+The object is not modified.
+
+=item o In chained context
+
+Returns the object.
+
+The object I<is> modified by sorting its items.
+
+=back
+
+Use your standard I<$a> and I<$b> variables within your sort sub:
+
+Program:
+
+	#!/usr/bin/perl
+
+	use Set::Array;
+
+	# -------------
+
+	my $s = Set::Array->new(
+		{ name => 'Berger', salary => 15000 },
+		{ name => 'Berger', salary => 20000 },
+		{ name => 'Vera', salary => 25000 },
+	);
+
+	my($subref) = sub{ $b->{name} cmp $a->{name} || $b->{salary} <=> $a->{salary} };
+	my(@h)      = $s->sort($subref);
+
+	for my $h (@h)
+	{
+		print "Name: $$h{name}. Salary: $$h{salary}. \n";
+	}
+
+Output (because the sort subref puts $b before $a for name and salary):
+
+	Name: Vera. Salary: 25000.
+	Name: Berger. Salary: 20000.
+	Name: Berger. Salary: 15000.
+
+=head2 splice([offset], [length], [list])
 
 Splice the array starting at position I<offset> up to I<length> elements, and replace them with I<list>.
 
@@ -1234,11 +1349,37 @@ This method B<always> modifies the object, regardless of context.
 
 If your goal was to grab a range of values without modifying the object, use the I<indices> method instead.
 
-=item unique()
+=head2 unique()
 
-Removes/returns non-unique elements from the list.
+Returns a list of 1 element for each element which appears N times in the set.
 
-=item unshift(list)
+For example, if you have set "X X Y Y Y", this method would return the list "X Y".
+
+If you want the output to be "X Y Y", see L</duplicates()>.
+
+=over 4
+
+=item o In scalar context
+
+Returns an array ref of unique items.
+
+The object is not modified.
+
+=item o In list context
+
+Returns an array of unique items.
+
+The object is not modified.
+
+=item o In chained context
+
+Returns the object.
+
+The object I<is> modified if it contains duplicated items.
+
+=back
+
+=head2 unshift(list)
 
 Prepends a scalar or list to array.
 
@@ -1246,13 +1387,9 @@ Note that this method returns an array or array reference in list or scalar cont
 
 It does B<not> return the length of the array in scalar context. Use the I<length> method for that.
 
-=back
-
 =head1 ODDBALL METHODS
 
-=over 4
-
-=item as_hash([$option])
+=head2 as_hash([$option])
 
 Returns a hash based on the current array, with each
 even numbered element (including 0) serving as the key, and each odd element
@@ -1302,7 +1439,7 @@ make the code backwards-compatible.
 
 =back
 
-=item impose([append/prepend], string)
+=head2 impose([append/prepend], string)
 
 Appends or prepends the specified string to each element in the array.
 
@@ -1310,11 +1447,11 @@ Specify the method with either 'append' or 'prepend'.
 
 The default is 'append'.
 
-=item randomize()
+=head2 randomize()
 
 Randomizes the order of the elements within the array.
 
-=item rotate(direction)
+=head2 rotate(direction)
 
 Moves the last item of the list to the front and shifts all other elements one to the right, or vice-versa,
 depending on what you pass as the direction - 'ftol' (first to last) or 'ltof' (last to first).
@@ -1328,11 +1465,10 @@ $sao->rotate(); # order is now 3,1,2
 
 $sao->rotate('ftol'); # order is back to 1,2,3
 
-=item to_hash()
+=head2 to_hash()
 
 This is an alias for I<as_hash()>.
 
-=back
 
 =head1 OVERLOADED (COMPARISON) OPERATORS
 

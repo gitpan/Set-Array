@@ -1,5 +1,12 @@
 Revision history for Perl extension Set::Array.
 
+0.23  Tue Feb 15 15:03:00 2011
+	- Replace /usr/bin/perl with /usr/bin/env perl.
+	- Replace common::sense with use strict and use warnings, to get uninit var warnings.
+	- Add MYMETA.json to MANIFEST.SKIP.
+	- Update META.yml.
+	- Add META.json to distro.
+
 0.22  Thu Dec  9 19:58:00 2010
 	- Rewrite the docs for compact(), delete(), duplicates(), reverse(), sort() and unique(),
 		after email discussions with belg4mit. See RT#63543.

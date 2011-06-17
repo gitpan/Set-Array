@@ -25,7 +25,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 sub new{
    my($class,@array) = @_;
@@ -887,8 +887,7 @@ __END__
 
 =head1 NAME
 
-Set::Array - Arrays as objects with lots of handy methods (including Set
-comparisons) and support for method chaining.
+Set::Array - Arrays as objects with lots of handy methods
 
 =head1 SYNOPSIS
 
@@ -1309,7 +1308,7 @@ Use your standard I<$a> and I<$b> variables within your sort sub:
 
 Program:
 
-	#!/usr/bin/perl
+	#!/usr/bin/env perl
 
 	use Set::Array;
 

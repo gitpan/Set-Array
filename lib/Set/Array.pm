@@ -9,6 +9,7 @@ use attributes qw(reftype);
 use subs qw(foreach pack push pop shift join rindex splice unpack unshift);
 use Want;
 use Carp;
+use Try::Tiny;
 
 # Some not documented/implemented.  Waiting for Want-0.06 to arrive.
 use overload
@@ -25,7 +26,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 
 sub new{
    my($class,@array) = @_;
@@ -760,10 +761,14 @@ sub difference{
       CORE::push(@diff,$item1{$_});
    }
 
-   if(want('OBJECT') || !(defined wantarray)){
-      @$op1 = @diff;
-      return $op1;
-   }
+   try
+   {
+	   if (want('OBJECT') || ! defined wantarray)
+	   {
+		   @$op1 = @diff;
+		   return $op1;
+	   }
+   };
 
    if(wantarray){ return @diff }
    if(defined wantarray){ return \@diff }
@@ -1089,6 +1094,40 @@ Deletes the item at the specified index.
 If a second index is specified, a range of items is deleted.
 
 You may use -1 or the string 'end' to refer to the last element of the array.
+
+=head2 difference($one, $two)
+
+Returns all elements in the left set that are not in the right set.
+
+There is a problem however, with 2 bugs in the Want module (V 0.20), relating to want('OBJECT') and wantref() both causing segfaults.
+
+So, I have used Try::Tiny to capture a call to want('OBJECT') in sub difference().
+
+If an error is thrown, I just ignore it. This is horribly tacky, but after waiting 7 years I've given up on expecting patches to Want.
+
+Sample code:
+
+	#!/usr/bin/env perl
+	
+	use strict;
+	use warnings;
+	
+	use Set::Array;
+	
+	# -------------
+	
+	my($set1) = Set::Array->new(qw(abc def ghi jkl mno));
+	my($set2) = Set::Array->new(qw(def jkl pqr));
+	my($set3) = $set1 - $set2;
+	my($set4) = Set::Array -> new(@{$set1 - $set2});
+	
+	print '1: ', join(', ', @$set3), ". \n";
+	print '2: ', join(', ', @{$set4 -> print}), ". \n";
+	print '3: ', join(', ', $set4 -> print), ". \n";
+
+The last 3 lines all produce the same, correct, output, so that's the construct you have to use.
+
+See t/difference.pl.
 
 =head2 duplicates()
 
@@ -1502,7 +1541,7 @@ an array (in list context) or array reference (in scalar context).
 B<&> or B<bag> - The union of both sets, including duplicates.
 
 B<-> or B<difference> - Returns all elements in the left set that are not in
-the right set.
+the right set. See L</difference($one, $two)> for details.
 
 B<==> or B<is_equal> - This tests for equality of the content of the sets,
 though ignores order. Thus, comparing (1,2,3) and (3,1,2) will yield a I<true>
@@ -1584,6 +1623,8 @@ C<my @unique = $sao1-E<gt>unique-E<gt>print;>
 There is a bug in the I<Want-0.05> module that currently prevents the use of
 most of the overloaded operators, though you can still use the corresponding
 method names.  The equality operators B<==> and B<!=> should work, however.
+
+There are still bugs in Want V 0.20. See the discussion of L</difference($one, $two)> for details.
 
 =head1 FUTURE PLANS
 

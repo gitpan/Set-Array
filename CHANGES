@@ -1,5 +1,11 @@
 Revision history for Perl extension Set::Array.
 
+0.24  Wed mar  7 11:52:00 2012
+	- Due to bugs in Want's want('OBJECT') and wantref(), I used Try::Tiny to capture a call to want('OBJECT') in sub difference().
+	  If an error is thrown, I just ignore it. So, to get what's probably the expected result, see the sample code in the docs for difference().
+	  To this end, I've added an explicit section (=head2) in the docs for difference().
+	- Ship the sample code as t/difference.pl.
+
 0.23  Tue Feb 15 15:03:00 2011
 	- Replace /usr/bin/perl with /usr/bin/env perl.
 	- Replace common::sense with use strict and use warnings, to get uninit var warnings.

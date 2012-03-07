@@ -7,5 +7,6 @@ MANIFEST			This list of files
 META.json
 META.yml
 README
+t/difference.pl
 t/pod.t
 t/test.t

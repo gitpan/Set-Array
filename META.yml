@@ -4,12 +4,12 @@ author:
   - 'Ron Savage <ron@savage.net.au>'
 build_requires:
   Test::Deep: 0
-  Test::More: 0
+  Test::More: 0.47
   Test::Pod: 0
 configure_requires:
   Module::Build: 0.38
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4, CPAN::Meta::Converter version 2.113640'
+generated_by: 'Module::Build version 0.4, CPAN::Meta::Converter version 2.120630'
 license: artistic
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -18,10 +18,16 @@ name: Set-Array
 provides:
   Set::Array:
     file: lib/Set/Array.pm
-    version: 0.24
+    version: 0.25
 requires:
   Carp: 0
+  Try::Tiny: 0.11
   Want: 0
+  attributes: 0.06
+  overload: 1.01
+  strict: 1.03
+  subs: 1
+  warnings: 1.03
 resources:
   license: http://opensource.org/licenses/artistic-license.php
-version: 0.24
+version: 0.25

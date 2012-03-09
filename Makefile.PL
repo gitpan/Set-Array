@@ -10,25 +10,30 @@ WriteMakefile
 		'AUTHOR' => 'Ron Savage (ron@savage.net.au)',
 		'ABSTRACT' => 'Arrays as objects with lots of handy methods',
     ) : (),
-	clean				=>
+	clean =>
 	{
-		FILES			=> 'blib/* Makefile MANIFEST Set-Array-*'
+		FILES => 'blib/* Makefile MANIFEST Set-Array-*'
 	},
-	dist				=>
+	dist =>
 	{
-		COMPRESS		=> 'gzip',
-		SUFFIX			=> 'gz'
+		COMPRESS => 'gzip',
+		SUFFIX   => 'gz'
 	},
-	DISTNAME			=> 'Set-Array',
-	NAME				=> 'Set::Array',
-	PL_FILES			=> {},
-	PREREQ_PM			=>
+	DISTNAME  => 'Set-Array',
+	NAME      => 'Set::Array',
+	PL_FILES  => {},
+	PREREQ_PM =>
 	{
-		Carp			=> 0,
-		Test::Deep		=> 0,
-		Test::More		=> 0,
-		Test::Pod		=> 0,
-		Want			=> 0,
+		Carp       => 1.01,
+		overload   => 1.01,
+		strict     => 1.03,
+		subs       => 1.00,
+		Test::Deep => 0,
+		Test::More => 0.47,
+		Test::Pod  => 0,
+		Try::Tiny  => 0.11
+		Want       => 0,
+		warnings   => 1.03,
 	},
-	VERSION_FROM		=> 'lib/Set/Array.pm',
+	VERSION_FROM => 'lib/Set/Array.pm',
 );

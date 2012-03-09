@@ -9,7 +9,7 @@ Module::Build -> new
  build_requires =>
  {
 	 Test::Deep => 0,
-	 Test::More => 0,
+	 Test::More => 0.47,
 	 Test::Pod  => 0,
  },
  configure_requires =>
@@ -18,7 +18,13 @@ Module::Build -> new
  },
  requires =>
  {
-	 Carp => 0,
-	 Want => 0,
+ 	attributes => 0.06,
+	Carp       => 0,
+	overload   => 1.01,
+	strict     => 1.03,
+	subs       => 1.00,
+	Try::Tiny  => 0.11,
+	Want       => 0,
+	warnings   => 1.03,
  },
 ) -> create_build_script();

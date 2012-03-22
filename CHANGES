@@ -1,9 +1,14 @@
 Revision history for Perl extension Set::Array.
 
+0.26  Thu Mar 22 10:50:00 2012
+	- No code changes.
+	- Expand the sample code and comments under difference() to show more clearly what sets get
+		changed during operations, and to show another way of determining the difference between sets.
+
 0.25  Fri Mar  9 16:58:00 2012
 	- Add Try::Tiny to pre-reqs. Add attributes, overload, strict, subs and warnings too.
 
-0.24  Wed mar  7 11:52:00 2012
+0.24  Wed Mar  7 11:52:00 2012
 	- Due to bugs in Want's want('OBJECT') and wantref(), I used Try::Tiny to capture a call to want('OBJECT') in sub difference().
 	  If an error is thrown, I just ignore it. So, to get what's probably the expected result, see the sample code in the docs for difference().
 	  To this end, I've added an explicit section (=head2) in the docs for difference().

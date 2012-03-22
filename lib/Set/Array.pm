@@ -1,12 +1,9 @@
-##############################################################################
-# Set::Array
-#
-# See POD at end for documentation.
-##############################################################################
 package Set::Array;
+
 use strict;
 use attributes qw(reftype);
 use subs qw(foreach pack push pop shift join rindex splice unpack unshift);
+
 use Want;
 use Carp;
 use Try::Tiny;
@@ -26,7 +23,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 
 sub new{
    my($class,@array) = @_;
@@ -1099,11 +1096,13 @@ You may use -1 or the string 'end' to refer to the last element of the array.
 
 Returns all elements in the left set that are not in the right set.
 
+Study the sample code below carefully, since all of $set1, $set8 and $set9 get changed, perhaps when you weren't expecting them to be.
+
 There is a problem however, with 2 bugs in the Want module (V 0.20), relating to want('OBJECT') and wantref() both causing segfaults.
 
 So, I have used Try::Tiny to capture a call to want('OBJECT') in sub difference().
 
-If an error is thrown, I just ignore it. This is horribly tacky, but after waiting 7 years I've given up on expecting patches to Want.
+If an error is thrown, I just ignore it. This is horribly tacky, but after waiting 7 years (it's 2012-03-07) I've given up on expecting patches to Want.
 
 Sample code:
 
@@ -1116,16 +1115,20 @@ Sample code:
 
 	# -------------
 
-	my($set1) = Set::Array->new(qw(abc def ghi jkl mno));
-	my($set2) = Set::Array->new(qw(def jkl pqr));
-	my($set3) = $set1 - $set2;
-	my($set4) = Set::Array -> new(@{$set1 - $set2});
+	my($set1) = Set::Array -> new(qw(abc def ghi jkl mno) );
+	my($set8) = Set::Array -> new(@$set1);           # Duplicate for later.
+	my($set9) = Set::Array -> new(@$set1);           # Duplicate for later.
+	my($set2) = Set::Array -> new(qw(def jkl pqr));
+	my($set3) = $set1 - $set2;                       # Changes $set1. $set3 is a set.
+	my($set4) = Set::Array -> new(@{$set8 - $set2}); # Changes $set8. $set4 is a set.
+	my(@set5) = $set9 -> difference($set2);          # Changes $set9. $set5 is an array.
 
 	print '1: ', join(', ', @$set3), ". \n";
 	print '2: ', join(', ', @{$set4 -> print}), ". \n";
 	print '3: ', join(', ', $set4 -> print), ". \n";
+	print '4: ', join(', ', @set5), ". \n";
 
-The last 3 lines all produce the same, correct, output, so that's the construct you have to use.
+The last 4 lines all produce the same, correct, output, so any of $set3, $set4 or $set5 is what you want.
 
 See t/difference.pl.
 

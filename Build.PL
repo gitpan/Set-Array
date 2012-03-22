@@ -8,7 +8,7 @@ Module::Build -> new
  dist_author    => 'Ron Savage <ron@savage.net.au>',
  build_requires =>
  {
-	 Test::Deep => 0,
+	 Test::Deep => 0.108,
 	 Test::More => 0.47,
 	 Test::Pod  => 0,
  },

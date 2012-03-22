@@ -24,14 +24,15 @@ WriteMakefile
 	PL_FILES  => {},
 	PREREQ_PM =>
 	{
+	 	attributes => 0.06,
 		Carp       => 1.01,
 		overload   => 1.01,
 		strict     => 1.03,
 		subs       => 1.00,
-		Test::Deep => 0,
+		Test::Deep => 0.108,
 		Test::More => 0.47,
 		Test::Pod  => 0,
-		Try::Tiny  => 0.11
+		Try::Tiny  => 0.11,
 		Want       => 0,
 		warnings   => 1.03,
 	},

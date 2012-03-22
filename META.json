@@ -16,7 +16,7 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Test::Deep" : "0",
+            "Test::Deep" : "0.108",
             "Test::More" : "0.47",
             "Test::Pod" : "0"
          }
@@ -42,7 +42,7 @@
    "provides" : {
       "Set::Array" : {
          "file" : "lib/Set/Array.pm",
-         "version" : "0.25"
+         "version" : "0.26"
       }
    },
    "release_status" : "stable",
@@ -51,5 +51,5 @@
          "http://opensource.org/licenses/artistic-license.php"
       ]
    },
-   "version" : "0.25"
+   "version" : "0.26"
 }

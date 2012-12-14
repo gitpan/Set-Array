@@ -23,7 +23,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 sub new{
    my($class,@array) = @_;
@@ -116,7 +116,7 @@ sub count{
       return $hits;
    }
 
-   $hits = grep /^$val$/, @$self;
+   $hits = grep /^\Q$val\E$/, @$self;
    if(want('OBJECT')){ return bless \$hits }
    return $hits;
 }
@@ -147,7 +147,7 @@ sub delete{
    }
 
    foreach my $val(@vals){
-      @$self = grep $_ !~ /^$val$/, @$self;
+      @$self = grep $_ !~ /^\Q$val\E$/, @$self;
    }
 
    if(want('OBJECT')){ return $self }
@@ -208,7 +208,7 @@ sub exists{
       return 0;
    }
 
-   if(grep /^$val$/, @$self){ return 1 }
+   if(grep /^\Q$val\E$/, @$self){ return 1 }
 
    return 0;
 }
@@ -341,7 +341,7 @@ sub index{
 
    for(my $n=0; $n<=$#$self; $n++){
       next unless defined $self->[$n];
-      if( $self->[$n] =~ /$val/ ){
+      if( $self->[$n] =~ /\Q$val\E$/ ){
          if(want('OBJECT')){ return bless \$n }
          if(defined wantarray){ return $n }
       }
@@ -561,7 +561,7 @@ sub rindex{
 
    for(my $n = $#$self; $n >= 0; $n--){
       next unless defined $self->[$n];
-      if( $self->[$n] =~ /$val/ ){
+      if( $self->[$n] =~ /\Q$val\E$/ ){
          if(want('OBJECT')){ return bless \$n }
          if(defined wantarray){ return $n }
       }

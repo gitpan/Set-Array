@@ -1,5 +1,17 @@
 Revision history for Perl extension Set::Array.
 
+0.27  Sat Dec 15 07:19:00 2012
+	- Fix RT#81971, kindly reported by Henrik Hald Nørgaard.
+		When special chars, as used in regexps, are set members, or used to find set members, they
+		must be quoted with \Q$value\E inside regexps.
+		This fix was applied to count(), delete(), exists(), index() and rindex().
+	- Add t/rt.81971.t to exercise the new code.
+	- While examining the code for this fix, I found a couple of other bugs: In index() and rindex(),
+		the value searched for was compared with each set member using this regexp, /$value/,
+		instead of this regexp, /$value$/. The missing, trailing, $ meant that the member could match just
+		the prefix of $value, rather than match the value exactly. So in those 2 methods the tests are now
+		/\Q$value\E$/. The other 3 methods mentioned above already used /$value$/.
+
 0.26  Thu Mar 22 10:50:00 2012
 	- No code changes.
 	- Expand the sample code and comments under difference() to show more clearly what sets get

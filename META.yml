@@ -18,7 +18,7 @@ name: Set-Array
 provides:
   Set::Array:
     file: lib/Set/Array.pm
-    version: 0.27
+    version: 0.28
 requires:
   Carp: 0
   Try::Tiny: 0.11
@@ -30,4 +30,4 @@ requires:
   warnings: 1.03
 resources:
   license: http://www.perlfoundation.org/artistic_license_1_0
-version: 0.27
+version: 0.28

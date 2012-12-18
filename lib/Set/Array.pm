@@ -23,7 +23,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 
 sub new{
    my($class,@array) = @_;
@@ -341,7 +341,7 @@ sub index{
 
    for(my $n=0; $n<=$#$self; $n++){
       next unless defined $self->[$n];
-      if( $self->[$n] =~ /\Q$val\E$/ ){
+      if( $self->[$n] =~ /^\Q$val\E$/ ){
          if(want('OBJECT')){ return bless \$n }
          if(defined wantarray){ return $n }
       }
@@ -561,7 +561,7 @@ sub rindex{
 
    for(my $n = $#$self; $n >= 0; $n--){
       next unless defined $self->[$n];
-      if( $self->[$n] =~ /\Q$val\E$/ ){
+      if( $self->[$n] =~ /^\Q$val\E$/ ){
          if(want('OBJECT')){ return bless \$n }
          if(defined wantarray){ return $n }
       }
@@ -1309,6 +1309,8 @@ The object I<is> modified, with its items being reversed.
 =head2 rindex(val)
 
 Similar to the I<index()> method, except that it returns the index of the last I<val> found within the array.
+
+Returns I<undef> if no value is found.
 
 =head2 set(index, value)
 

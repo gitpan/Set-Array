@@ -1,5 +1,11 @@
 Revision history for Perl extension Set::Array.
 
+0.28  Wed Dec 19 08:50:00 2012
+	- Extend fix for RT#81971 to add ^ in the regexps used in index() and rindex(), so they are now
+		/^\Q$value\E$/ and not just /\Q$value\E$/. This issue was also reported by Henrik Hald Nørgaard.
+	- Update docs for rindex() is say undef is returned - as with index() - if the value is not found.
+	- Extend t/rt.81971.t to check rindex() returns undef when searching for the suffix of a value.
+
 0.27  Sat Dec 15 07:19:00 2012
 	- Fix RT#81971, kindly reported by Henrik Hald Nørgaard.
 		When special chars, as used in regexps, are set members, or used to find set members, they

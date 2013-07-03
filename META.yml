@@ -5,12 +5,11 @@ author:
 build_requires:
   Test::Deep: 0.108
   Test::More: 0.47
-  Test::Pod: 0
 configure_requires:
   Module::Build: 0.38
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120630'
-license: artistic
+generated_by: 'Module::Build version 0.4005, CPAN::Meta::Converter version 2.131560'
+license: artistic_2
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
@@ -18,7 +17,7 @@ name: Set-Array
 provides:
   Set::Array:
     file: lib/Set/Array.pm
-    version: 0.28
+    version: 0.29
 requires:
   Carp: 0
   Try::Tiny: 0.11
@@ -29,5 +28,5 @@ requires:
   subs: 1
   warnings: 1.03
 resources:
-  license: http://www.perlfoundation.org/artistic_license_1_0
-version: 0.28
+  license: http://www.perlfoundation.org/artistic_license_2_0
+version: 0.29

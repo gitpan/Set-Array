@@ -21,6 +21,7 @@ WriteMakefile
 	},
 	DISTNAME  => 'Set-Array',
 	NAME      => 'Set::Array',
+	LICENSE   => 'artistic_2',
 	PL_FILES  => {},
 	PREREQ_PM =>
 	{
@@ -30,8 +31,8 @@ WriteMakefile
 		strict     => 1.03,
 		subs       => 1.00,
 		Test::Deep => 0.108,
-		Test::More => 0.47,
-		Test::Pod  => 0,
+		Test::More=> 0.47,
+#		Test::Pod  => 1.45, # Make it optional. See t/pod.t
 		Try::Tiny  => 0.11,
 		Want       => 0,
 		warnings   => 1.03,

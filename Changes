@@ -1,5 +1,13 @@
 Revision history for Perl extension Set::Array.
 
+0.29  Wed Jul  3 16:20:00 2013
+	- No code changes.
+	- Rename CHANGES to Changes as per CPAN::Changes::SPEC.
+	- Recreate META.* files so they say licence is artistic_2 rather than artistic_1.
+		Build.PL and Makefile.PL already said artistic_2, but the META.* files didn't.
+		There is no reference to licences in the source of the module itself.
+		This was requested by Christopher Meng who packages stuff for Fedora.
+
 0.28  Wed Dec 19 08:50:00 2012
 	- Extend fix for RT#81971 to add ^ in the regexps used in index() and rindex(), so they are now
 		/^\Q$value\E$/ and not just /\Q$value\E$/. This issue was also reported by Henrik Hald Nørgaard.

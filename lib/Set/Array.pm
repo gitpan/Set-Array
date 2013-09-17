@@ -23,7 +23,7 @@ use overload
    ">>=" => "pop",
    "fallback" => 1;
 
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 sub new{
    my($class,@array) = @_;
@@ -910,7 +910,7 @@ The 'Want' module by Robin Houston.  Available on CPAN.
 =head1 DESCRIPTION
 
 Set::Array allows you to create arrays as objects and use OO-style methods
-on them.  Many convenient methods are provided here that appear in the FAQ's,
+on them.  Many convenient methods are provided here that appear in the FAQs,
 the Perl Cookbook or posts from comp.lang.perl.misc.
 In addition, there are Set methods with corresponding (overloaded)
 operators for the purpose of Set comparison, i.e. B<+>, B<==>, etc.
@@ -929,14 +929,14 @@ B<Here are the rules>:
 
 * If a method is called in void context, the object itself is modified.
 
-* If the method called is not the last method in a chain (i.e. it's called
+* If the method called is not the last method in a chain (i.e. it is called
   in object context), the object itself is modified by that method regardless
   of the 'final' context or method call.
 
 * If a method is called in list or scalar context, a list or list refererence
   is returned, respectively. The object itself is B<NOT> modified.
 
-Here's a quick example:
+Here is a quick example:
 
 C<< my $sao = Set::Array->new(1,2,3,2,3); >>
 
@@ -956,7 +956,7 @@ B<Here are the exceptions>:
 * The methods I<shift()> and I<pop()> will modify the object B<AND> return
   the value that was shifted or popped from the array.  Again, it seemed
   much too counterintuitive for something like C<$val = $sao-E<gt>shift> to
-  return a value while leaving the object's list unchanged.  If you
+  return a value while leaving the object unchanged.  If you
   really want the first or last value without modifying the object, you
   can always use the I<first()> or I<last()> method, respectively.
 
@@ -992,6 +992,16 @@ A negative index may be used to count from the end of the array.
 
 If no value (or I<undef>) is specified, it will look for the first item
 that is not defined.
+
+=head2 bag($other_set, $reverse)
+
+Returns the union of both sets, including duplicates (i.e. everything).
+
+Setting C<$reverse> to 1 reverses the sets as the first step in the method.
+
+Note: It does not reverse the contents of the sets.
+
+See L</General Notes> for the set of such methods, including a list of overloaded operators.
 
 =head2 clear([1])
 
@@ -1092,17 +1102,25 @@ If a second index is specified, a range of items is deleted.
 
 You may use -1 or the string 'end' to refer to the last element of the array.
 
-=head2 difference($one, $two)
+=head2 difference($one, $two, $reverse)
 
 Returns all elements in the left set that are not in the right set.
 
-Study the sample code below carefully, since all of $set1, $set8 and $set9 get changed, perhaps when you weren't expecting them to be.
+Setting C<$reverse> to 1 reverses the sets as the first step in the method.
+
+Note: It does not reverse the contents of the sets.
+
+See L</General Notes> for the set of such methods, including a list of overloaded operators.
+
+Study the sample code below carefully, since all of $set1, $set8 and $set9 get changed, perhaps when you were not
+expecting them to be.
 
 There is a problem however, with 2 bugs in the Want module (V 0.20), relating to want('OBJECT') and wantref() both causing segfaults.
 
 So, I have used Try::Tiny to capture a call to want('OBJECT') in sub difference().
 
-If an error is thrown, I just ignore it. This is horribly tacky, but after waiting 7 years (it's 2012-03-07) I've given up on expecting patches to Want.
+If an error is thrown, I just ignore it. This is horribly tacky, but after waiting 7 years (it is now 2012-03-07)
+I have given up on expecting patches to Want.
 
 Sample code:
 
@@ -1213,7 +1231,7 @@ Returns the index of the first element of the array object that contains I<val>.
 
 Returns I<undef> if no value is found.
 
-Note that there is no dereferencing here so if you're looking for an item
+Note that there is no dereferencing here so if you are looking for an item
 nested within a ref, use the I<flatten> method first.
 
 =head2 indices(val1, [val2], [valN])
@@ -1222,6 +1240,34 @@ Returns an array consisting of the elements at the specified indices, or I<undef
 is out of range.
 
 A range may also be used for each of the <valN> parameters. A range must be a quoted string in '0..999' format.
+
+=head2 intersection($other_set)
+
+Returns all elements common to both sets.
+
+Note: It does not eliminate duplicates. Call L</unique()> if that is what you want.
+
+You are strongly encouraged to examine line 19 of both t/intersection.1.pl and t/intersection.2.pl.
+
+Setting C<$reverse> to 1 reverses the sets as the first step in the method.
+
+Note: It does not reverse the contents of the sets.
+
+See L</General Notes> for the set of such methods, including a list of overloaded operators.
+
+=head2 is_equal($other_set)
+
+Tests to see if the 2 sets are equal (regardless of order). Returns 1 for equal and 0 for not equal.
+
+Setting C<$reverse> to 1 reverses the sets as the first step in the method.
+
+Since order is ignored, this parameter is irrelevant.
+
+Note: It does not reverse the contents of the sets.
+
+See L</General Notes> for the set of such methods, including a list of overloaded operators.
+
+See also L</not_equal($other_set)>.
 
 =head2 join([string])
 
@@ -1246,6 +1292,28 @@ Returns the number of elements within the array.
 Returns the maximum value of an array.
 
 No effort is made to check for non-numeric data.
+
+=head2 new()
+
+This is the constructor.
+
+See L</difference($one, $two, $reverse)> for sample code.
+
+See also L</flatten()> for converting arrayrefs and hashrefs into lists.
+
+=head2 not_equal($other_set)
+
+Tests to see if the 2 sets are not equal (regardless of order). Returns 1 for not equal and 0 for equal.
+
+Setting C<$reverse> to 1 reverses the sets as the first step in the method.
+
+Since order is ignored, this parameter is irrelevant.
+
+Note: It does not reverse the contents of the sets.
+
+See L</General Notes> for the set of such methods, including a list of overloaded operators.
+
+See also L</is_equal($other_set)>.
 
 =head2 pack(template)
 
@@ -1288,13 +1356,13 @@ Note that it does B<not> return the length in scalar context. Use the I<length> 
 
 =item o In scalar context
 
-Returns an array ref of the object's items, reversed.
+Returns an array ref of the items in the object, reversed.
 
 The object is not modified.
 
 =item o In list context
 
-Returns an array of the object's items, reversed.
+Returns an array of the items in the object, reversed.
 
 The object is not modified.
 
@@ -1330,13 +1398,13 @@ Sorts the contents of the array in alphabetical order, or in the order specified
 
 =item o In scalar context
 
-Returns an array ref of the object's items, sorted.
+Returns an array ref of the items in the object, sorted.
 
 The object is not modified.
 
 =item o In list context
 
-Returns an array of the object's items, sorted.
+Returns an array of the items in the object, sorted.
 
 The object is not modified.
 
@@ -1443,7 +1511,7 @@ in which case the even values serve as the values, and the odd elements serve as
 
 The default value of $option is I<even>.
 
-Of course, if you don't care about insertion order, you could just as well
+Of course, if you do not care about insertion order, you could just as well
 do something like, C<< $sao->reverse->as_hash; >>
 
 This method does not actually modify the object itself in any way. It just returns a plain
@@ -1522,6 +1590,10 @@ array reference (blessed or not) in any combination, so long as one is a
 Set::Array object.  You may use either the operator or the equivalent method
 call.
 
+Warning: You should always experiment with these methods before using them in production.
+Why? Because you may have unrealistic expectations that they I<automatially> eliminate duplicates, for example.
+See the L</FAQ> for more.
+
 Examples (using the '==' operator or 'is_equal' method):
 
 my $sao1 = Set::Array->new(1,2,3,4,5);
@@ -1557,14 +1629,36 @@ order is ignored.
 
 B<*> or B<intersection> - Returns all elements that are common to both sets.
 
+Be warned that that line says 'all elements', not 'unique elements'. You can call L</unique>
+is you need just the unique elements.
+
+See t/intersection.*.pl for sample code with and without calling unique().
+
 B<%> or B<symmetric_difference> or B<symm_diff> - Returns all elements that are in one set
 or the other, but not both.  Opposite of intersection.
 
 B<+> or B<union> - Returns the union of both sets.  Duplicates excluded.
 
+=head1 FAQ
+
+=head2 Why does the intersection() method include duplicates in the output?
+
+Because it is documented to do that. The docs above say:
+
+"Returns all elements that are common to both sets.
+
+Be warned that that line says 'all elements', not 'unique elements'. You can call L</unique()>
+is you need just the unique elements."
+
+Those statements means what they says!
+
+See t/intersection.*.pl for sample code with and without calling unique().
+
+The following section, C<EXAMPLES>, contains other types of FAQ items.
+
 =head1 EXAMPLES
 
-For our examples, I'll create 3 different objects
+For our examples, I will create 3 different objects
 
 my $sao1 = Set::Array->new(1,2,3,a,b,c,1,2,3);
 
@@ -1596,7 +1690,7 @@ C<if($sao1 == $sao2){ ... }>
 
 C<if($sao1-E<gt>is_equal($sao2){ ... } # Same thing>
 
-I<fill an array with a value, but only if it's not empty?>
+I<fill an array with a value, but only if it is not empty?>
 
 C<if(!$sao1-E<gt>is_empty()){ $sao1-E<gt>fill('x') }>
 
@@ -1635,7 +1729,7 @@ There are still bugs in Want V 0.20. See the discussion of L</difference($one, $
 
 Anyone want a built-in 'permute()' method?
 
-I'm always on the lookout for faster algorithms.  If you've looked at the code
+I am always on the lookout for faster algorithms.  If you heve looked at the code
 for a particular method and you know of a faster way, please email me.  Be
 prepared to backup your claims with benchmarks (and the benchmark code you
 used).  Tests on more than one operating system are preferable.  No, I<map> is

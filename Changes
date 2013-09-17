@@ -1,5 +1,18 @@
 Revision history for Perl extension Set::Array.
 
+0.30  Wed Sep 18 09:21:00 2013
+	- No code changes.
+	- Add t/intersection.*.pl as part of the expanded discussion of methods such as intersection().
+		This code was developed in conjunction with Joern Behre, to help clear up confusion over
+		the issue of the uniqueness of items returned from various methods.
+	- Add an FAQ with an item discussing this issue.
+	- Expand the discussion of overloaded operators to recommend testing of the output of various methods
+		before production use, and that unique() may need to be called, since unique() is not called
+		automatically during a call to, say, intersection().
+	- Include docs for bag(), difference(), intersection(), is_equal() and not_equal() explicitly among
+		all other methods, besides their original mention under 'OVERLOADED (COMPARISON) OPERATORS'.
+	- Include docs for new() as well.
+
 0.29  Wed Jul  3 16:20:00 2013
 	- No code changes.
 	- Rename CHANGES to Changes as per CPAN::Changes::SPEC.
